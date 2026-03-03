@@ -1,0 +1,27 @@
+node_modules
+.opencode*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Build outputs
+dist
+dist-ssr
+
+# Vite
+.vite
+.cache
+
+# Environment
+.env
+.env.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# System
+.DS_Store

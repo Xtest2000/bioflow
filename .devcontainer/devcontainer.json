@@ -1,0 +1,20 @@
+{
+  "name": "test_vue",
+  "dockerComposeFile": "../compose_dev.yaml",
+  "service": "ts_dev",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "vue.volar",
+        "dbaeumer.vscode-eslint",
+        "yoavbls.pretty-ts-errors",
+        "sst-dev.opencode"
+      ]
+    }
+  },
+  "shutdownAction": "stopContainer",
+  "postCreateCommand": "chmod 700 /root/.ssh && chmod 600 /root/.ssh/*"
+}

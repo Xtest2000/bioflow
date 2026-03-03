@@ -1,0 +1,20 @@
+networks:
+  dev_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+  ts_dev:
+    image: ts_dev:latest
+    user: "0:0"
+    volumes:
+      - ./.opencode-config:/root/.config/opencode     # ← 全局 config、plugins、modes 等
+      - ./.opencode-local:/root/.local/share/opencode
+      - ..:/workspaces
+      - ~/.ssh:/root/.ssh
+    restart: unless-stopped
+    networks:
+      - dev_network
+    command: sleep infinity
