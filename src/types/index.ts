@@ -2,7 +2,6 @@ export interface User {
   id: number
   username: string
   email: string
-  role: string
 }
 
 export interface LoginForm {
@@ -12,8 +11,8 @@ export interface LoginForm {
 }
 
 export interface LoginResponse {
-  access: string
-  refresh: string
+  csrf_token: string
+  msg: string
   user: User
 }
 

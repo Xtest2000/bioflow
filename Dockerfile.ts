@@ -6,7 +6,10 @@ RUN apt-get update -y && \
         git \
         vim \
         procps \
-        openssh-server \              
+        openssh-server \
+        tmux \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
     && apt-get clean && \
        rm -rf /var/lib/apt/lists/*
 

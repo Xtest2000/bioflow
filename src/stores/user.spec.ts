@@ -1,6 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useUserStore } from './user'
+
+vi.mock('@/api/auth', () => ({
+  login: vi.fn(async (data: { username: string; password: string }) => {
+    if (data.username === 'admin' && data.password === '123456') {
+      return {
+        csrf_token: 'mock_csrf_token',
+        msg: 'success',
+        user: { id: 1, username: 'admin', email: 'admin@example.com' },
+      }
+    }
+    throw new Error('用户名或密码错误')
+  }),
+  logout: vi.fn(async () => {}),
+}))
 
 describe('useUserStore', () => {
   beforeEach(() => {
@@ -11,7 +25,7 @@ describe('useUserStore', () => {
   it('initializes with no user', () => {
     const store = useUserStore()
     expect(store.user).toBeNull()
-    expect(store.token).toBeNull()
+    expect(store.csrfToken).toBeNull()
     expect(store.isLoggedIn).toBe(false)
   })
 
@@ -21,7 +35,7 @@ describe('useUserStore', () => {
 
     expect(store.user).not.toBeNull()
     expect(store.user?.username).toBe('admin')
-    expect(store.token).not.toBeNull()
+    expect(store.csrfToken).not.toBeNull()
     expect(store.isLoggedIn).toBe(true)
   })
 
@@ -39,7 +53,7 @@ describe('useUserStore', () => {
 
     await store.logout()
     expect(store.user).toBeNull()
-    expect(store.token).toBeNull()
+    expect(store.csrfToken).toBeNull()
     expect(store.isLoggedIn).toBe(false)
   })
 
@@ -47,7 +61,6 @@ describe('useUserStore', () => {
     const store = useUserStore()
     await store.login({ username: 'admin', password: '123456' })
 
-    expect(localStorage.getItem('access_token')).not.toBeNull()
-    expect(localStorage.getItem('refresh_token')).not.toBeNull()
+    expect(localStorage.getItem('csrf_token')).not.toBeNull()
   })
 })

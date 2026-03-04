@@ -10,6 +10,7 @@ Guide for agentic coding agents operating in this Vue 3 + TypeScript repository.
 2. **完整验收** - 任务完成前必须运行 typecheck + lint + test 并展示结果
 3. **Diff 摘要** - 每次修改文件必须提供 diff 摘要
 4. **测试先行** - 新增代码必须编写对应的单元测试
+5. **Plan Mode 禁止修改** - Plan Mode 下严禁执行任何修改操作（文件编辑、启动/终止服务、写入文件等），只能读取和制定计划
 
 ---
 
@@ -361,20 +362,38 @@ describe('Login', () => {
 
 当前 Dockerfile.ts 已包含的工具：
 
-```dockerfile
-FROM node:22-slim
+- git
+- vim
+- curl
+- procps (包含 ps, pkill 等)
+- openssh-server
+- tmux
 
-RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-        git \
-        vim && \
-        curl && \
-        pkill && \
-        ps && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+### 开发服务器管理
 
-RUN npm install -g opencode-ai
+使用 tmux 管理开发服务器，方便查看实时输出和调试：
+
+```bash
+# 创建 vite 会话并启动开发服务器
+tmux new-session -d -s vite 'npm run dev'
+
+# 查看所有会话
+tmux ls
+
+# 进入 vite 会话查看输出
+tmux attach -t vite
+
+# 退出会话（不关闭）
+# 按 Ctrl+B 然后按 D
+
+# 关闭 vite 会话
+tmux kill-session -t vite
+```
+
+**推荐**：使用 tmux skill 获得更详细的 tmux 操作指南：
+
+```
+skill tmux
 ```
 
 ### 镜像重建流程

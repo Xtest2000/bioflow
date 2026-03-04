@@ -1,59 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Monitor, DataAnalysis, Document, Setting } from '@element-plus/icons-vue'
+import { onMounted } from 'vue'
+import { useToolStore } from '@/stores/tool'
+import { storeToRefs } from 'pinia'
+import { Search, Refresh } from '@element-plus/icons-vue'
 
-const tools = ref([
-  {
-    id: '1',
-    name: '服务器监控',
-    description: '实时监控服务器性能指标，包括 CPU、内存、磁盘使用情况',
-    icon: Monitor,
-    category: '运维工具',
-    status: 'active',
-  },
-  {
-    id: '2',
-    name: '数据分析',
-    description: '强大的数据分析工具，支持多种数据源和可视化图表',
-    icon: DataAnalysis,
-    category: '分析工具',
-    status: 'active',
-  },
-  {
-    id: '3',
-    name: '报表生成',
-    description: '自动化报表生成工具，支持定时任务和多格式导出',
-    icon: Document,
-    category: '报表工具',
-    status: 'active',
-  },
-  {
-    id: '4',
-    name: '系统配置',
-    description: '系统参数配置管理，支持动态调整运行参数',
-    icon: Setting,
-    category: '系统工具',
-    status: 'maintenance',
-  },
-])
+const toolStore = useToolStore()
+const { tools, pagination, isLoading } = storeToRefs(toolStore)
 
-function getStatusText(status: string): string {
-  const map: Record<string, string> = {
-    active: '可用',
-    maintenance: '维护中',
-    disabled: '已禁用',
-  }
-  return map[status] || '未知'
+const searchInput = ref('')
+const selectedVersions = ref<Record<number, string>>({})
+
+function handleSearch() {
+  toolStore.setSearchName(searchInput.value)
+  toolStore.fetchTools(1, pagination.value.pageSize)
 }
 
-function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'danger' {
-  const map: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
-    active: 'success',
-    maintenance: 'warning',
-    disabled: 'info',
-  }
-  return map[status] || 'info'
+function handleReset() {
+  searchInput.value = ''
+  toolStore.setSearchName('')
+  toolStore.fetchTools(1, pagination.value.pageSize)
 }
+
+function handlePageChange(page: number) {
+  toolStore.fetchTools(page, pagination.value.pageSize)
+}
+
+function handleSizeChange(size: number) {
+  toolStore.fetchTools(1, size)
+}
+
+onMounted(() => {
+  toolStore.fetchTools()
+})
 </script>
 
 <template>
@@ -63,34 +41,84 @@ function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'd
       <p class="page-subtitle">选择您需要的工具开始工作</p>
     </div>
 
-    <div class="tools-grid">
-      <el-card
-        v-for="tool in tools"
-        :key="tool.id"
-        class="tool-card"
-        shadow="hover"
-        :body-style="{ padding: '24px' }"
-      >
-        <div class="tool-icon">
-          <el-icon :size="40"><component :is="tool.icon" /></el-icon>
-        </div>
-        <div class="tool-info">
-          <div class="tool-header">
-            <h3 class="tool-name">{{ tool.name }}</h3>
-            <el-tag :type="getStatusType(tool.status)" size="small">
-              {{ getStatusText(tool.status) }}
-            </el-tag>
-          </div>
-          <p class="tool-category">{{ tool.category }}</p>
-          <p class="tool-desc">{{ tool.description }}</p>
-        </div>
-        <div class="tool-actions">
-          <el-button type="primary" :disabled="tool.status !== 'active'"> 立即使用 </el-button>
-        </div>
-      </el-card>
+    <div class="search-bar">
+      <el-input
+        v-model="searchInput"
+        placeholder="输入工具名称搜索"
+        :prefix-icon="Search"
+        clearable
+        style="width: 300px"
+        @keyup.enter="handleSearch"
+      />
+      <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
+      <el-button :icon="Refresh" @click="handleReset">重置</el-button>
     </div>
+
+    <div v-if="isLoading" class="loading">
+      <el-icon class="is-loading" :size="32"><Loading /></el-icon>
+      <span>加载中...</span>
+    </div>
+
+    <template v-else>
+      <div v-if="tools.length > 0" class="tools-grid">
+        <el-card
+          v-for="tool in tools"
+          :key="tool.toolID"
+          class="tool-card"
+          shadow="hover"
+          :body-style="{ padding: '24px' }"
+        >
+          <div class="tool-icon">
+            <el-icon :size="40"><Box /></el-icon>
+          </div>
+          <div class="tool-info">
+            <h3 class="tool-name">{{ tool.toolName }}</h3>
+            <p class="tool-desc">{{ tool.toolDesc }}</p>
+            <div class="tool-versions">
+              <el-select
+                v-model="selectedVersions[tool.toolID]"
+                placeholder="选择版本"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="version in tool.versions"
+                  :key="version"
+                  :label="version"
+                  :value="version"
+                />
+              </el-select>
+            </div>
+          </div>
+          <div class="tool-actions">
+            <el-button type="primary">立即使用</el-button>
+          </div>
+        </el-card>
+      </div>
+
+      <el-empty v-else description="暂无工具数据" />
+
+      <div class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="pagination.currentPage"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </template>
   </div>
 </template>
+
+<script lang="ts">
+import { ref } from 'vue'
+import { Box, Loading } from '@element-plus/icons-vue'
+export default {
+  components: { Box, Loading },
+}
+</script>
 
 <style scoped>
 .tools-page {
@@ -99,7 +127,7 @@ function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'd
 }
 
 .page-header {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .page-title {
@@ -114,10 +142,30 @@ function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'd
   color: #64748b;
 }
 
+.search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: #909399;
+}
+
+.loading .el-icon {
+  margin-bottom: 8px;
+}
+
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
+  margin-bottom: 24px;
 }
 
 .tool-card {
@@ -147,35 +195,34 @@ function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'd
   margin-bottom: 16px;
 }
 
-.tool-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
 .tool-name {
   font-size: 18px;
   font-weight: 600;
   color: #1a1f36;
-  margin: 0;
-}
-
-.tool-category {
-  font-size: 12px;
-  color: #64748b;
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
 .tool-desc {
   font-size: 14px;
   color: #475569;
   line-height: 1.5;
-  margin: 0;
+  margin: 0 0 12px;
+}
+
+.tool-versions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .tool-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
 }
 </style>

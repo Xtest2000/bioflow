@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia'
 import { Refresh, Search } from '@element-plus/icons-vue'
 
 const taskStore = useTaskStore()
-const { statistics, recentTasks, isLoading } = storeToRefs(taskStore)
+const { recentTasks, isLoading } = storeToRefs(taskStore)
 
 const searchText = ref('')
 const statusFilter = ref('')
@@ -61,25 +61,6 @@ onMounted(() => {
         <el-button type="primary" :icon="Refresh" :loading="isLoading" @click="handleRefresh">
           刷新
         </el-button>
-      </div>
-    </div>
-
-    <div v-if="statistics" class="stats-cards">
-      <div class="stat-card running">
-        <div class="stat-value">{{ statistics.running }}</div>
-        <div class="stat-label">运行中</div>
-      </div>
-      <div class="stat-card completed">
-        <div class="stat-value">{{ statistics.completed }}</div>
-        <div class="stat-label">已完成</div>
-      </div>
-      <div class="stat-card failed">
-        <div class="stat-value">{{ statistics.failed }}</div>
-        <div class="stat-label">失败</div>
-      </div>
-      <div class="stat-card pending">
-        <div class="stat-value">{{ statistics.pending }}</div>
-        <div class="stat-label">等待中</div>
       </div>
     </div>
 
@@ -156,55 +137,6 @@ onMounted(() => {
 .page-subtitle {
   font-size: 14px;
   color: #64748b;
-}
-
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 768px) {
-  .stats-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.stat-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  border: 1px solid #e2e8f0;
-}
-
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-.stat-card.running .stat-value {
-  color: #e6a23c;
-}
-
-.stat-card.completed .stat-value {
-  color: #67c23a;
-}
-
-.stat-card.failed .stat-value {
-  color: #f56c6c;
-}
-
-.stat-card.pending .stat-value {
-  color: #909399;
 }
 
 .table-card {

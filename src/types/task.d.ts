@@ -1,8 +1,9 @@
 export interface TaskStatistics {
-  running: number
-  completed: number
-  failed: number
-  pending: number
+  activeTask: number
+  doneTask: number
+  queuedTask: number
+  terminatedTask: number
+  totalTask: number
 }
 
 export interface Task {

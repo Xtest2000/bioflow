@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getMockTaskStatistics, getMockRecentTasks } from '@/api/task'
+import { fetchTaskStatistics, fetchRecentTasks } from '@/api/task'
 import type { TaskStatistics, Task } from '@/types/task.d'
 
 export const useTaskStore = defineStore('task', () => {
@@ -13,8 +13,7 @@ export const useTaskStore = defineStore('task', () => {
     isLoading.value = true
     error.value = null
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      statistics.value = getMockTaskStatistics()
+      statistics.value = await fetchTaskStatistics()
     } catch (e) {
       error.value = e instanceof Error ? e.message : '获取任务统计失败'
     } finally {
@@ -22,17 +21,16 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  async function fetchRecentTasks() {
+  async function fetchRecentTasksList() {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      recentTasks.value = getMockRecentTasks()
+      recentTasks.value = await fetchRecentTasks()
     } catch (e) {
       error.value = e instanceof Error ? e.message : '获取最近任务失败'
     }
   }
 
   async function fetchAll() {
-    await Promise.all([fetchStatistics(), fetchRecentTasks()])
+    await Promise.all([fetchStatistics(), fetchRecentTasksList()])
   }
 
   function $reset() {
@@ -48,7 +46,7 @@ export const useTaskStore = defineStore('task', () => {
     isLoading,
     error,
     fetchStatistics,
-    fetchRecentTasks,
+    fetchRecentTasksList,
     fetchAll,
     $reset,
   }

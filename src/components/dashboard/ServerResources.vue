@@ -2,9 +2,8 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useServerStore } from '@/stores/server'
 import { storeToRefs } from 'pinia'
-import CpuChart from '@/components/charts/CpuChart.vue'
-import MemoryChart from '@/components/charts/MemoryChart.vue'
-import DiskChart from '@/components/charts/DiskChart.vue'
+import UsageChart from '@/components/charts/UsageChart.vue'
+import { Loading } from '@element-plus/icons-vue'
 
 const serverStore = useServerStore()
 const { resources, isLoading, lastUpdated } = storeToRefs(serverStore)
@@ -51,9 +50,9 @@ onUnmounted(() => {
     </div>
 
     <div v-else-if="resources" class="resources-grid">
-      <CpuChart :usage="resources.cpu.usage" :cores="resources.cpu.cores" />
-      <MemoryChart :used="resources.memory.used" :total="resources.memory.total" />
-      <DiskChart :used="resources.disk.used" :total="resources.disk.total" />
+      <UsageChart :usage="resources.cpu" label="CPU 使用率" />
+      <UsageChart :usage="resources.ram" label="内存使用率" />
+      <UsageChart :usage="resources.disk" label="磁盘使用率" />
     </div>
 
     <div v-else class="empty">
@@ -61,13 +60,6 @@ onUnmounted(() => {
     </div>
   </el-card>
 </template>
-
-<script lang="ts">
-import { Loading } from '@element-plus/icons-vue'
-export default {
-  components: { Loading },
-}
-</script>
 
 <style scoped>
 .server-resources {

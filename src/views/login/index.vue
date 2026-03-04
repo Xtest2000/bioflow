@@ -471,6 +471,11 @@ onMounted(() => {
 
 .input-wrapper {
   position: relative;
+  width: 100%;
+}
+
+.input-wrapper :deep(.el-input) {
+  width: 100%;
 }
 
 .input-wrapper :deep(.el-input__wrapper) {
@@ -478,8 +483,9 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   box-shadow: none;
-  padding: 4px 16px;
+  padding: 12px 16px;
   transition: all 0.3s ease;
+  min-height: 48px;
 }
 
 .input-wrapper :deep(.el-input__wrapper:hover) {

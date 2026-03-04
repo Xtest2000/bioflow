@@ -1,23 +1,33 @@
 import api from './index'
 import type { TaskStatistics, Task } from '@/types/task.d'
 
-export async function getTaskStatistics(): Promise<TaskStatistics> {
-  const response = await api.get<TaskStatistics>('/tasks/statistics')
+const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
+
+export async function getTaskOverview(): Promise<TaskStatistics> {
+  const response = await api.post<TaskStatistics>('/analysis/getTaskOverview/')
   return response.data
 }
 
 export function getMockTaskStatistics(): TaskStatistics {
   return {
-    running: Math.floor(Math.random() * 5) + 1,
-    completed: Math.floor(Math.random() * 50) + 20,
-    failed: Math.floor(Math.random() * 10),
-    pending: Math.floor(Math.random() * 8),
+    activeTask: Math.floor(Math.random() * 5) + 1,
+    doneTask: Math.floor(Math.random() * 50) + 20,
+    terminatedTask: Math.floor(Math.random() * 10),
+    queuedTask: Math.floor(Math.random() * 8),
+    totalTask: 0,
   }
 }
 
-export async function getRecentTasks(): Promise<Task[]> {
-  const response = await api.get<Task[]>('/tasks/recent')
-  return response.data
+export async function fetchTaskStatistics(): Promise<TaskStatistics> {
+  if (isMockMode) {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    const mockData = getMockTaskStatistics()
+    mockData.totalTask =
+      mockData.activeTask + mockData.doneTask + mockData.terminatedTask + mockData.queuedTask
+    return mockData
+  }
+
+  return getTaskOverview()
 }
 
 export function getMockRecentTasks(): Task[] {
@@ -51,4 +61,14 @@ export function getMockRecentTasks(): Task[] {
       updatedAt: new Date(Date.now() - 1800000).toISOString(),
     },
   ]
+}
+
+export async function fetchRecentTasks(): Promise<Task[]> {
+  if (isMockMode) {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    return getMockRecentTasks()
+  }
+
+  const response = await api.post<Task[]>('/analysis/getRecentTasks/')
+  return response.data
 }

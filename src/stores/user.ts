@@ -1,50 +1,38 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User, LoginForm } from '@/types'
+import { login as apiLogin, logout as apiLogout } from '@/api/auth'
+
+const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
 
 const MOCK_USER: User = {
   id: 1,
   username: 'admin',
   email: 'admin@example.com',
-  role: 'admin',
 }
-
-const isMockMode = true
 
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
-  const token = ref<string | null>(localStorage.getItem('access_token'))
-  const refreshToken = ref<string | null>(localStorage.getItem('refresh_token'))
+  const csrfToken = ref<string | null>(localStorage.getItem('csrf_token'))
 
-  const isLoggedIn = computed(() => !!token.value)
+  const isLoggedIn = computed(() => !!csrfToken.value)
 
   async function login(form: LoginForm) {
-    if (isMockMode) {
-      if (form.username === 'admin' && form.password === '123456') {
-        const mockToken = 'mock_access_token_' + Date.now()
-        const mockRefreshToken = 'mock_refresh_token_' + Date.now()
-        token.value = mockToken
-        refreshToken.value = mockRefreshToken
-        user.value = MOCK_USER
-        localStorage.setItem('access_token', mockToken)
-        localStorage.setItem('refresh_token', mockRefreshToken)
-        return
-      }
-      throw new Error('用户名或密码错误')
-    }
+    const response = await apiLogin(form)
+    csrfToken.value = response.csrf_token
+    user.value = response.user
+    localStorage.setItem('csrf_token', response.csrf_token)
   }
 
   async function logout() {
-    token.value = null
-    refreshToken.value = null
+    await apiLogout()
+    csrfToken.value = null
     user.value = null
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
   }
 
   async function fetchUser() {
-    if (!token.value) return
-    if (isMockMode && token.value.startsWith('mock_')) {
+    if (!csrfToken.value) return
+    if (isMockMode && csrfToken.value.startsWith('mock_')) {
       user.value = MOCK_USER
       return
     }
@@ -52,8 +40,7 @@ export const useUserStore = defineStore('user', () => {
 
   return {
     user,
-    token,
-    refreshToken,
+    csrfToken,
     isLoggedIn,
     login,
     logout,

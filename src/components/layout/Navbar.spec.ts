@@ -1,9 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia, setActivePinia } from 'pinia'
 import Navbar from './Navbar.vue'
 import { useUserStore } from '@/stores/user'
+
+vi.mock('@/api/auth', () => ({
+  login: vi.fn(async (data: { username: string; password: string }) => {
+    if (data.username === 'admin' && data.password === '123456') {
+      return {
+        csrf_token: 'mock_csrf_token',
+        msg: 'success',
+        user: { id: 1, username: 'admin', email: 'admin@example.com' },
+      }
+    }
+    throw new Error('用户名或密码错误')
+  }),
+  logout: vi.fn(async () => {}),
+}))
 
 const router = createRouter({
   history: createWebHistory(),

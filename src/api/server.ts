@@ -1,12 +1,14 @@
 import api from './index'
-import type { ServerResources } from '@/types/server.d'
+import type { ServerResources, MockServerResources } from '@/types/server.d'
 
-export async function getServerResources(): Promise<ServerResources> {
-  const response = await api.get<ServerResources>('/server/resources')
+const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
+
+export async function getSourceUsage(): Promise<ServerResources> {
+  const response = await api.post<ServerResources>('/analysis/sourceUsage/')
   return response.data
 }
 
-export function getMockServerResources(): ServerResources {
+export function getMockServerResources(): MockServerResources {
   return {
     cpu: {
       usage: Math.floor(Math.random() * 60) + 20,
@@ -23,4 +25,18 @@ export function getMockServerResources(): ServerResources {
       usage: 0,
     },
   }
+}
+
+export async function fetchServerResources(): Promise<ServerResources> {
+  if (isMockMode) {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    const mockData = getMockServerResources()
+    return {
+      cpu: mockData.cpu.usage,
+      disk: Math.round((mockData.disk.used / mockData.disk.total) * 100),
+      ram: Math.round((mockData.memory.used / mockData.memory.total) * 100),
+    }
+  }
+
+  return getSourceUsage()
 }

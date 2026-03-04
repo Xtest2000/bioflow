@@ -1,22 +1,22 @@
-export interface CpuResource {
-  usage: number
-  cores: number
-}
-
-export interface MemoryResource {
-  used: number
-  total: number
-  usage: number
-}
-
-export interface DiskResource {
-  used: number
-  total: number
-  usage: number
-}
-
 export interface ServerResources {
-  cpu: CpuResource
-  memory: MemoryResource
-  disk: DiskResource
+  cpu: number
+  disk: number
+  ram: number
+}
+
+export interface MockServerResources {
+  cpu: {
+    usage: number
+    cores: number
+  }
+  memory: {
+    used: number
+    total: number
+    usage: number
+  }
+  disk: {
+    used: number
+    total: number
+    usage: number
+  }
 }

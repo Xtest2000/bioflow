@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { useTaskStore } from '@/stores/task'
 import { storeToRefs } from 'pinia'
 import type { Task } from '@/types/task.d'
+import { Loading } from '@element-plus/icons-vue'
 
 const taskStore = useTaskStore()
 const { statistics, recentTasks, isLoading } = storeToRefs(taskStore)
@@ -58,21 +59,25 @@ onMounted(() => {
     <template v-else>
       <div v-if="statistics" class="statistics-grid">
         <div class="stat-item running">
-          <div class="stat-value">{{ statistics.running }}</div>
+          <div class="stat-value">{{ statistics.activeTask }}</div>
           <div class="stat-label">运行中</div>
         </div>
         <div class="stat-item completed">
-          <div class="stat-value">{{ statistics.completed }}</div>
+          <div class="stat-value">{{ statistics.doneTask }}</div>
           <div class="stat-label">已完成</div>
         </div>
         <div class="stat-item failed">
-          <div class="stat-value">{{ statistics.failed }}</div>
-          <div class="stat-label">失败</div>
+          <div class="stat-value">{{ statistics.terminatedTask }}</div>
+          <div class="stat-label">已终止</div>
         </div>
         <div class="stat-item pending">
-          <div class="stat-value">{{ statistics.pending }}</div>
-          <div class="stat-label">等待中</div>
+          <div class="stat-value">{{ statistics.queuedTask }}</div>
+          <div class="stat-label">排队中</div>
         </div>
+      </div>
+
+      <div class="total-task" v-if="statistics">
+        <span>总任务数: {{ statistics.totalTask }}</span>
       </div>
 
       <div class="recent-tasks">
@@ -96,13 +101,6 @@ onMounted(() => {
     </template>
   </el-card>
 </template>
-
-<script lang="ts">
-import { Loading } from '@element-plus/icons-vue'
-export default {
-  components: { Loading },
-}
-</script>
 
 <style scoped>
 .task-overview {
@@ -139,7 +137,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 @media (max-width: 768px) {
@@ -183,6 +181,16 @@ export default {
   color: #909399;
 }
 
+.total-task {
+  text-align: center;
+  padding: 8px;
+  background: #f0f2f5;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #606266;
+}
+
 .section-title {
   font-size: 14px;
   font-weight: 500;
@@ -191,6 +199,6 @@ export default {
 }
 
 .recent-tasks {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 </style>

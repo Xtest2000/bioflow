@@ -1,0 +1,343 @@
+{
+  "loginapi": {
+    "request": {
+      "path": "/analysis/login/",
+      "method": "POST",
+      "parameters": {
+        "username": "admin",
+        "password": "CycloneFlow01admin"
+      }
+    },
+    "reponse": {
+      "csrf_token": "Qpzl0UYNhvl9rmnpfHPo4EqDszNqaHRNiuYhVvYmGAVxQ2TfKlnnpyTK4M2G5WgZ",
+      "msg": "success",
+      "user": {
+        "email": "demo@example.com",
+        "id": 4,
+        "username": "demo"
+      }
+    }
+  },
+  "registerapi": {
+    "request": {
+      "path": "/analysis/register/",
+      "method": "POST",
+      "parameters": {
+        "username": "test@gmail.com",
+        "password": "test1234"
+      }
+    },
+    "reponse": {
+      "csrf_token": "YETaWtBaImO31RbU5nw0xuZ9SsZg0cxK6WgrMwdas1EmB1yuVUfF7gSiZnGSxNRa",
+      "message": "User created successfully",
+      "user": {
+        "username": "test@gmail.com",
+        "id": 6
+      }
+    }
+  },
+  "getTaskOverview": {
+    "request": {
+      "path": "/analysis/getTaskOverview/",
+      "method": "POST",
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "activeTask": 0,
+      "doneTask": 1,
+      "queuedTask": 0,
+      "terminatedTask": 5,
+      "totalTask": 6
+    }
+  },
+  "sourceUsage": {
+    "request": {
+      "path": "/analysis/sourceUsage/",
+      "method": "POST",
+      "X-CSRFToken": "******"
+    },
+    "response": {
+      "cpu": 1.7,
+      "disk": 71.3,
+      "ram": 11.3
+    }
+  },
+  "addTool": {
+    "request": {
+      "path": "/analysis/addTool/",
+      "method": "POST",
+      "parameters": {
+        "packagePath": "/path/toolpackage"
+      },
+      "X-CSRFToken": "******"
+    },
+    "response": {
+      "created": "2025-07-09",
+      "id": 9,
+      "message": "Tool created successfully",
+      "tool_name": "CNV",
+      "tool_version": "V1.0.0.0"
+    }
+  },
+  "getToolList": {
+    "request": {
+      "path": "/analysis/getToolList/",
+      "method": "POST",
+      "parameters": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "toolName": "CNV"
+      },
+      "X-CSRFToken": "******"
+    },
+    "response": {
+      "pagination": {
+        "currentPage": 1,
+        "pageSize": "10",
+        "total": 1,
+        "totalPages": 1
+      },
+      "tools": [
+        {
+          "toolDesc": "一个做 CNV 检测的工具",
+          "toolDesc_en": "a CNV tool",
+          "toolID": 10,
+          "toolImg": "/data/cromwell_workdir/CNV_V10.0.0.0/logo.jpg",
+          "toolName": "CNV",
+          "versions": ["V10.0.0.0"]
+        }
+      ]
+    }
+  },
+  "deleteTool": {
+    "request": {
+      "path": "/analysis/deleteTool/",
+      "method": "POST",
+      "parameters": {
+        "toolID": 8
+      },
+      "X-CSRFToken": "******"
+    },
+    "response": {
+      "code": 0,
+      "message": "Tool deleted successfully",
+      "toolID": "8"
+    }
+  },
+  "getToolDetail": {
+    "request": {
+      "path": "/analysis/getToolDetail/",
+      "method": "POST",
+      "parameters": {
+        "toolID": 8,
+        "version": "V1.0.0.0"
+      },
+      "X-CSRFToken": "******"
+    },
+    "response": {
+      "developer": "tester",
+      "inFileDesc": [
+        "原始FASTQ文件：测序原始数据（R1/R2双端文件或单端文件）",
+        "参考基因组：hg19/hg38等版本FASTA文件（需包含索引）",
+        "接头序列文件：Illumina/TruSeq等平台适配器序列（用于cutadapt）",
+        "目标区域文件（WES必需）：捕获目标区域的BED文件（如全外显子组）",
+        "对照样本BAM文件（配对分析）：正常样本的预处理BAM（肿瘤-正常配对）",
+        "注释数据库：ANNOVAR/VEP所需的人类基因组数据库文件",
+        "质控阈值：比对率、覆盖深度等自定义阈值（如>90%，≥30X）",
+        "GC校正文件（可选）：参考基因组GC内容曲线文件",
+        "验证引物设计参考：目标CNV区域坐标（用于下游qPCR验证）",
+        "流程配置文件：YAML/JSON格式的运行参数配置文件"
+      ],
+      "inFileDesc_en": [
+        "Raw FASTQ files: Sequencing raw data (paired-end R1/R2 files or single-end files)",
+        "Reference genome: FASTA files for versions like hg19/hg38 (must include index files)",
+        "Adapter sequence file: Platform-specific adapters (e.g., Illumina/TruSeq) for cutadapt",
+        "Target regions file (Required for WES): BED file defining capture regions (e.g., whole exome)",
+        "Control sample BAM file (For paired analysis): Preprocessed BAM of normal sample (tumor-normal pairing)",
+        "Annotation databases: Human genome database files required for ANNOVAR/VEP",
+        "QC thresholds: Custom thresholds (e.g., alignment rate >90%, coverage depth ≥30X)",
+        "GC correction file (Optional): Reference genome GC content profile",
+        "Verification primer design reference: Target CNV region coordinates (for downstream qPCR validation)",
+        "Workflow configuration file: Run parameter file in YAML/JSON format"
+      ],
+      "outFileDesc": [
+        "QC报告：FastQC输出的HTML质量报告（含测序质量/接头污染/GC分布）",
+        "预处理日志：Trimmomatic/cutadapt的trimming统计报告（保留reads比例）",
+        "比对BAM文件：排序去重后的BAM文件（含samtools index生成的.bai索引）",
+        "CNV原始结果：分段拷贝数表（Control-FREEC的ratio.txt / CNVkit的.cns）",
+        "过滤后CNV结果：经过置信度过滤的BED/VCF文件（含断点坐标/拷贝数状态）",
+        "注释结果表：CSV/TXT格式的注释报告（基因/临床意义/频率数据库关联）",
+        "可视化图谱：PDF格式的全基因组CNV圈图（Circos或染色体分布图）",
+        "IGV截图：重点CNV区域的局部可视化截图（PNG/PDF格式）",
+        "汇总报告：MultiQC生成的整合质控HTML报告（含各阶段QC指标）",
+        "验证引物列表：待验证CNV的qPCR引物序列信息（FASTA格式）",
+        "下游结果包（可选）：cBioPortal输入文件/驱动基因整合报告"
+      ],
+      "outFileDesc_en": [
+        "QC Report: HTML quality report from FastQC (including sequencing quality/adapter contamination/GC distribution)",
+        "Preprocessing Log: Trimming statistics from Trimmomatic/cutadapt (retained reads percentage)",
+        "Aligned BAM Files: Sorted and deduplicated BAM files (with .bai index generated by samtools index)",
+        "Raw CNV Results: Segmented copy number tables (Control-FREEC's ratio.txt / CNVkit's .cns files)",
+        "Filtered CNV Results: Confidence-filtered BED/VCF files (with breakpoint coordinates/copy number states)",
+        "Annotation Report: CSV/TXT formatted annotation report (gene/clinical significance/frequency database associations)",
+        "Visualization Plots: PDF format genome-wide CNV circos plots (Circos or chromosome distribution maps)",
+        "IGV Screenshots: Local visualization screenshots of key CNV regions (PNG/PDF format)",
+        "Summary Report: Consolidated QC HTML report generated by MultiQC (including multi-stage QC metrics)",
+        "Verification Primer List: qPCR primer sequences for target CNVs (FASTA format)",
+        "Downstream Package (Optional): cBioPortal input files/driver gene integration report"
+      ],
+      "published": "2023-12-31",
+      "toolDesc": "一个做 CNV 检测的工具",
+      "toolDesc_en": "a CNV tool",
+      "toolID": 10,
+      "toolName": "CNV",
+      "version": "V10.0.0.0",
+      "workflowDesc": [
+        "原始数据质控：FastQC（评估FASTQ质量、GC含量、长度分布、接头污染）",
+        "数据预处理：Trimmomatic/cutadapt（切除Q<20低质量碱基，去除接头）",
+        "序列比对：BWA-MEM/STAR（比对到hg38参考基因组，输出BAM）",
+        "BAM文件处理：samtools/Picard（排序+去重），samtools index（索引生成）",
+        "CNV检测：可选工具[Control-FREEC(全基因组RD比值)/CNVkit(全外显子标准化)/GATK gCNV(概率模型)]，关键参数(窗口大小/GC校正/肿瘤-正常配对)",
+        "结果过滤与注释：过滤(长度<1kb或高频CNV)，注释(ANNOVAR/VEP关联基因功能)",
+        "可视化与报告：IGV(局部可视化)/R-ggplot2(全基因组图谱)，输出(BED文件/统计表/PDF报告)",
+        "质量控制：MultiQC监控(比对率>90%/覆盖深度≥30X/批次效应)",
+        "下游分析(可选)：SNV-Indel整合/TCGA预后关联(cBioPortal)/qPCR实验验证"
+      ],
+      "workflowDesc_en": [
+        "Raw Data QC: FastQC (assess FASTQ quality, GC content, length distribution, adapter contamination)",
+        "Data Preprocessing: Trimmomatic/cutadapt (trim Q<20 low-quality bases, remove adapters)",
+        "Sequence Alignment: BWA-MEM/STAR (align to hg38 reference genome, output BAM)",
+        "BAM Processing: samtools/Picard (sort + deduplicate), samtools index (generate index)",
+        "CNV Detection: Optional tools [Control-FREEC (WGS RD ratio)/CNVkit (WES normalization)/GATK gCNV (probabilistic model)], key parameters (window size/GC correction/tumor-normal pairing)",
+        "Result Filtering & Annotation: Filter (length<1kb or high-frequency CNVs), Annotation (ANNOVAR/VEP for gene function association)",
+        "Visualization & Reporting: IGV (local visualization)/R-ggplot2 (genome-wide map), Output (BED files/statistical tables/PDF reports)",
+        "Quality Control: MultiQC monitoring (alignment rate>90%/coverage depth≥30X/batch effects)",
+        "Downstream Analysis (Optional): SNV-Indel integration/TCGA prognosis association (cBioPortal)/qPCR experimental validation"
+      ]
+    }
+  },
+  "getToolparameter": {
+    "request": {
+      "path": "/analysis/getToolparameter/",
+      "method": "POST",
+      "parameters": {
+        "toolID": 6,
+        "version": "V2.0.0.0"
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "params": [
+        {
+          "controlType": "file",
+          "default": "./qc/q_value.py",
+          "desc": "质控脚本",
+          "desc_en": "qc script",
+          "key": "CNV_seq_baozheng_Pipeline.qc_script",
+          "name": "质控脚本",
+          "name_en": "qc script",
+          "required": true,
+          "type": "File",
+          "visible": false,
+          "enabled_for_sequencing": true
+        },
+        {
+          "controlType": "file",
+          "default": "./CN_value/CN_calculate.py",
+          "desc": "CN 值计算脚本",
+          "desc_en": "CN script",
+          "key": "CNV_seq_baozheng_Pipeline.CN_script",
+          "name": "CN 脚本文件",
+          "name_en": "CN script file",
+          "required": true,
+          "type": "File",
+          "visible": false
+        },
+        {
+          "controlType": "file",
+          "default": "./result_report/templates/report_template.html",
+          "desc": "报告模板文件",
+          "desc_en": "Report template file",
+          "key": "CNV_seq_baozheng_Pipeline.template_file",
+          "name": "报告模板文件",
+          "name_en": "Report template file",
+          "required": true,
+          "type": "File",
+          "visible": false
+        },
+        {
+          "controlType": "file",
+          "default": "./result_report/report.py",
+          "desc": "报告脚本",
+          "desc_en": "Report script",
+          "key": "CNV_seq_baozheng_Pipeline.report_script",
+          "name": "报告脚本",
+          "name_en": "Report script",
+          "required": true,
+          "type": "File",
+          "visible": false
+        },
+        {
+          "controlType": "file",
+          "desc": "样本文件",
+          "desc_en": "Sample file",
+          "key": "CNV_seq_baozheng_Pipeline.input_fq_file",
+          "name": "样本文件",
+          "name_en": "Sample file",
+          "required": true,
+          "type": "File",
+          "visible": true
+        },
+        {
+          "controlType": "file",
+          "default": "./bed_file/GC_100kb_2_filter.bed",
+          "desc": "染色体 bed 文件",
+          "desc_en": "chr bed file",
+          "key": "CNV_seq_baozheng_Pipeline.bed_file",
+          "name": "染色体 bed 文件",
+          "name_en": "chr bed file",
+          "required": true,
+          "type": "File",
+          "visible": false
+        },
+        {
+          "controlType": "file",
+          "default": "./ref/GRCh38_Y_mask.fa",
+          "desc": "参考基因组文件",
+          "desc_en": "ref file",
+          "key": "CNV_seq_baozheng_Pipeline.GRch38_ref_file",
+          "name": "参考基因组文件",
+          "name_en": "ref file",
+          "required": true,
+          "type": "File",
+          "visible": false
+        },
+        {
+          "controlType": "string",
+          "desc": "样本名",
+          "desc_en": "sample name",
+          "key": "CNV_seq_baozheng_Pipeline.sample_name",
+          "name": "样本名",
+          "name_en": "sample name",
+          "required": true,
+          "type": "String",
+          "visible": true
+        },
+        {
+          "controlType": "select",
+          "desc": "样本类型",
+          "desc_en": "sample type",
+          "key": "CNV_seq_baozheng_Pipeline.sample_type",
+          "name": "样本类型",
+          "name_en": "sample type",
+          "options": ["羊水", "企业参考品"],
+          "required": true,
+          "type": "String",
+          "visible": true
+        }
+      ],
+      "toolID": 1,
+      "tool_real_time_analysis": false
+    }
+  }
+}

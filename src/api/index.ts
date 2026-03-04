@@ -1,8 +1,10 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
+const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
+
 const api: AxiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: isMockMode ? '/api' : 'http://172.29.167.191:4080',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -11,9 +13,9 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    const csrfToken = localStorage.getItem('csrf_token')
+    if (csrfToken) {
+      config.headers['X-CSRFToken'] = csrfToken
     }
     return config
   },
@@ -28,8 +30,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('csrf_token')
       window.location.href = '/login'
     }
     return Promise.reject(error)
