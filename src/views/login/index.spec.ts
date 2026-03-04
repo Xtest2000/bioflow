@@ -30,17 +30,7 @@ describe('Login', () => {
         plugins: [router],
       },
     })
-    expect(wrapper.text()).toContain('工具平台分析系统')
-  })
-
-  it('renders subtitle', () => {
-    setActivePinia(createPinia())
-    const wrapper = mount(Login, {
-      global: {
-        plugins: [router],
-      },
-    })
-    expect(wrapper.text()).toContain('Tools Platform Analytics System')
+    expect(wrapper.text()).toContain('BioFlow')
   })
 
   it('shows test account hint', () => {

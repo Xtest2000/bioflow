@@ -92,8 +92,7 @@ onMounted(() => {
             </defs>
           </svg>
         </div>
-        <h1 class="title">工具平台分析系统</h1>
-        <p class="subtitle">Tools Platform Analytics System</p>
+        <h1 class="title">BioFlow</h1>
       </div>
 
       <el-form
