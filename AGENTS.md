@@ -2,6 +2,17 @@
 
 Guide for agentic coding agents operating in this Vue 3 + TypeScript repository.
 
+---
+
+## ⚠️ 核心原则
+
+1. **验证命令** - 运行命令后必须验证执行成功（进程、端口、输出）
+2. **完整验收** - 任务完成前必须运行 typecheck + lint + test 并展示结果
+3. **Diff 摘要** - 每次修改文件必须提供 diff 摘要
+4. **测试先行** - 新增代码必须编写对应的单元测试
+
+---
+
 ## Project Setup
 
 This is a Vue 3 + TypeScript project. When initializing, use:
@@ -263,6 +274,84 @@ This helps the user understand:
 1. What files were modified
 2. What specific changes were made
 3. Why the changes were needed
+
+---
+
+## Testing Protocol
+
+**IMPORTANT**: Always write tests early and run tests after every modification.
+
+### When to Write Tests
+
+1. **Before or alongside implementation** - Follow TDD when possible
+2. **For every new component** - Test rendering, props, events
+3. **For every composable/store** - Test state changes, actions
+4. **For every utility function** - Test edge cases
+
+### Test Types
+
+- **Unit Tests**: Composables, stores, utility functions
+- **Component Tests**: Vue components with Vue Test Utils
+
+### After Every Code Change
+
+1. Run `npm run test:run` to ensure all tests pass
+2. Run `npm run typecheck` to ensure no type errors
+3. Run `npm run lint` to ensure code quality
+
+### Test File Location
+
+- Co-locate with source: `src/components/Button.spec.ts`
+- Or use `__tests__` folder for grouped tests
+
+### Example Test
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import Login from '@/views/login/index.vue'
+
+describe('Login', () => {
+  it('renders login form', () => {
+    const wrapper = mount(Login)
+    expect(wrapper.find('input[placeholder="请输入用户名"]').exists()).toBe(true)
+  })
+})
+```
+
+---
+
+## Task Completion Protocol
+
+**CRITICAL**: A task is NOT complete until ALL of the following are verified:
+
+1. **Code changes compile** - Run `npm run typecheck`
+2. **Tests pass** - Run `npm run test:run`
+3. **Lint passes** - Run `npm run lint`
+4. **Feature works** - Start dev server and verify
+
+**NEVER** claim a task is complete without:
+
+- Running the relevant verification commands
+- Showing the output to confirm success
+- If tests fail, MUST fix and re-run until they pass
+
+**Example workflow:**
+
+```
+1. Write/modify code
+2. Run npm run typecheck → verify no errors
+3. Run npm run test:run → verify all tests pass
+4. Run npm run lint → verify no errors
+5. Only THEN mark task as complete
+```
+
+**If any step fails:**
+
+- Do NOT proceed to next task
+- Fix the issue immediately
+- Re-run the failed command
+- Show the successful output
 
 ---
 
