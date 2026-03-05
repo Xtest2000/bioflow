@@ -11,6 +11,7 @@ Guide for agentic coding agents operating in this Vue 3 + TypeScript repository.
 3. **Diff 摘要** - 每次修改文件必须提供 diff 摘要
 4. **测试先行** - 新增代码必须编写对应的单元测试
 5. **Plan Mode 禁止修改** - Plan Mode 下严禁执行任何修改操作（文件编辑、启动/终止服务、写入文件等），只能读取和制定计划
+6. **Skills 优先** - 执行任务前必须先检查可用 Skills，优先使用 Skills 提供的专业化能力，提高任务执行效率
 
 ---
 
@@ -356,6 +357,44 @@ describe('Login', () => {
 
 ---
 
+## Skills 使用指南
+
+**IMPORTANT**: 执行任何任务前，必须先检查是否有适用的 Skill，优先使用 Skill 提高效率。
+
+### 可用 Skills
+
+| Skill             | 用途               | 适用场景                                        |
+| ----------------- | ------------------ | ----------------------------------------------- |
+| `tmux`            | 远程控制 tmux 会话 | 启动/管理开发服务器、查看实时输出、调试后台进程 |
+| `frontend-design` | 创建高质量前端界面 | 构建 Web 组件、页面、应用，生成创意且精美的代码 |
+| `file-search`     | 搜索代码库         | 搜索文本模式、语法感知的代码搜索                |
+
+### 使用方式
+
+在执行任务时，主动调用相关 Skill：
+
+```
+skill tmux          # 获取 tmux 操作指南
+skill frontend-design  # 获取前端设计指南
+skill file-search   # 获取代码搜索指南
+```
+
+### 适用场景示例
+
+| 任务类型             | 推荐 Skill        | 说明                                |
+| -------------------- | ----------------- | ----------------------------------- |
+| 启动/重启开发服务器  | `tmux`            | 使用 Skill 提供的标准化流程管理会话 |
+| 创建新的 UI 组件     | `frontend-design` | 获取设计模式和最佳实践              |
+| 查找代码中的函数定义 | `file-search`     | 使用语法感知搜索精确定位            |
+
+### 注意事项
+
+1. **优先检查** - 接到任务后，首先判断是否有适用的 Skill
+2. **主动使用** - 不要等待用户提示，主动调用 Skill
+3. **遵循指南** - 使用 Skill 后，严格遵循其提供的指导流程
+
+---
+
 ## Dev Container 维护
 
 ### Dockerfile.ts 工具列表
@@ -374,27 +413,13 @@ describe('Login', () => {
 使用 tmux 管理开发服务器，方便查看实时输出和调试：
 
 ```bash
-# 创建 vite 会话并启动开发服务器
-tmux new-session -d -s vite 'npm run dev'
-
-# 查看所有会话
-tmux ls
-
-# 进入 vite 会话查看输出
-tmux attach -t vite
-
-# 退出会话（不关闭）
-# 按 Ctrl+B 然后按 D
-
-# 关闭 vite 会话
-tmux kill-session -t vite
+tmux new-session -d -s vite 'npm run dev'  # 创建 vite 会话
+tmux ls                                     # 查看所有会话
+tmux attach -t vite                         # 进入 vite 会话
+tmux kill-session -t vite                   # 关闭 vite 会话
 ```
 
-**推荐**：使用 tmux skill 获得更详细的 tmux 操作指南：
-
-```
-skill tmux
-```
+**重要**：操作 tmux 前应先调用 `skill tmux` 获取详细指南。
 
 ### 镜像重建流程
 

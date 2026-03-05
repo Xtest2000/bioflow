@@ -57,9 +57,10 @@
       "X-CSRFToken": "******"
     },
     "response": {
+      "ram": 11.9,
       "cpu": 1.7,
-      "disk": 71.3,
-      "ram": 11.3
+      "disk_data": 47.4,
+      "disk_root": 51.3
     }
   },
   "addTool": {

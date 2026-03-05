@@ -1,7 +1,8 @@
 export interface ServerResources {
   cpu: number
-  disk: number
   ram: number
+  disk_data: number
+  disk_root: number
 }
 
 export interface MockServerResources {

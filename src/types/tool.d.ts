@@ -24,3 +24,21 @@ export interface ToolListParams {
   pageSize: number
   toolName?: string
 }
+
+export interface ToolDetail {
+  toolID: number
+  toolName: string
+  toolDesc: string
+  toolDesc_en: string
+  version: string
+  developer: string
+  published: string
+  inFileDesc: string[]
+  outFileDesc: string[]
+  workflowDesc: string[]
+}
+
+export interface ToolDetailParams {
+  toolID: number
+  version: string
+}

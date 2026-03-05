@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useToolStore } from '@/stores/tool'
 import { storeToRefs } from 'pinia'
 import { Search, Refresh } from '@element-plus/icons-vue'
 
+const router = useRouter()
 const toolStore = useToolStore()
 const { tools, pagination, isLoading } = storeToRefs(toolStore)
 
@@ -29,8 +31,28 @@ function handleSizeChange(size: number) {
   toolStore.fetchTools(1, size)
 }
 
+function handleUseTool(tool: { toolID: number }) {
+  const version = selectedVersions.value[tool.toolID]
+  router.push({
+    path: `/tools/${tool.toolID}`,
+    query: {
+      version: version || tools.value.find((t) => t.toolID === tool.toolID)?.versions[0] || '',
+    },
+  })
+}
+
+function initVersions() {
+  tools.value.forEach((tool) => {
+    if (tool.versions.length > 0 && !selectedVersions.value[tool.toolID]) {
+      selectedVersions.value[tool.toolID] = tool.versions[0]
+    }
+  })
+}
+
 onMounted(() => {
-  toolStore.fetchTools()
+  toolStore.fetchTools().then(() => {
+    initVersions()
+  })
 })
 </script>
 
@@ -90,7 +112,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="tool-actions">
-            <el-button type="primary">立即使用</el-button>
+            <el-button type="primary" @click="handleUseTool(tool)">立即使用</el-button>
           </div>
         </el-card>
       </div>

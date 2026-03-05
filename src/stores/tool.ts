@@ -1,10 +1,11 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { fetchToolList } from '@/api/tool'
-import type { Tool, ToolListParams } from '@/types/tool.d'
+import { fetchToolList, fetchToolDetail as fetchToolDetailApi } from '@/api/tool'
+import type { Tool, ToolListParams, ToolDetail, ToolDetailParams } from '@/types/tool.d'
 
 export const useToolStore = defineStore('tool', () => {
   const tools = ref<Tool[]>([])
+  const currentToolDetail = ref<ToolDetail | null>(null)
   const pagination = ref({
     currentPage: 1,
     pageSize: 10,
@@ -45,6 +46,19 @@ export const useToolStore = defineStore('tool', () => {
     searchName.value = name
   }
 
+  async function fetchToolDetail(params: ToolDetailParams) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await fetchToolDetailApi(params)
+      currentToolDetail.value = response
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '获取工具详情失败'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   function $reset() {
     tools.value = []
     pagination.value = {
@@ -60,11 +74,13 @@ export const useToolStore = defineStore('tool', () => {
 
   return {
     tools,
+    currentToolDetail,
     pagination,
     searchName,
     isLoading,
     error,
     fetchTools,
+    fetchToolDetail,
     setSearchName,
     $reset,
   }

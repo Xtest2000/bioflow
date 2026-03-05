@@ -52,7 +52,7 @@ onUnmounted(() => {
     <div v-else-if="resources" class="resources-grid">
       <UsageChart :usage="resources.cpu" label="CPU 使用率" />
       <UsageChart :usage="resources.ram" label="内存使用率" />
-      <UsageChart :usage="resources.disk" label="磁盘使用率" />
+      <UsageChart :usage="resources.disk_root" label="磁盘使用率" />
     </div>
 
     <div v-else class="empty">

@@ -33,8 +33,9 @@ export async function fetchServerResources(): Promise<ServerResources> {
     const mockData = getMockServerResources()
     return {
       cpu: mockData.cpu.usage,
-      disk: Math.round((mockData.disk.used / mockData.disk.total) * 100),
       ram: Math.round((mockData.memory.used / mockData.memory.total) * 100),
+      disk_data: Math.round((mockData.disk.used / mockData.disk.total) * 100),
+      disk_root: Math.round((mockData.disk.used / mockData.disk.total) * 100),
     }
   }
 

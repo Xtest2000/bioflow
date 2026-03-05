@@ -1,19 +1,23 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 
-const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
-
 const api: AxiosInstance = axios.create({
-  baseURL: isMockMode ? '/api' : 'http://172.29.167.191:4080',
+  baseURL: '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 })
+
+function getCsrfFromCookie(): string | null {
+  const match = document.cookie.match(/csrftoken=([^;]+)/)
+  return match && match[1] ? match[1] : null
+}
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const csrfToken = localStorage.getItem('csrf_token')
+    const csrfToken = getCsrfFromCookie() || localStorage.getItem('csrf_token')
     if (csrfToken) {
       config.headers['X-CSRFToken'] = csrfToken
     }
