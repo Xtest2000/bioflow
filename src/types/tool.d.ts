@@ -42,3 +42,21 @@ export interface ToolDetailParams {
   toolID: number
   version: string
 }
+
+export interface AddToolParams {
+  packagePath: string
+}
+
+export interface AddToolResponse {
+  id: number
+  tool_name: string
+  tool_version: string
+  created: string
+  message: string
+}
+
+export interface DeleteToolResponse {
+  code: number
+  message: string
+  toolID: string
+}

@@ -6,12 +6,13 @@ Guide for agentic coding agents operating in this Vue 3 + TypeScript repository.
 
 ## ⚠️ 核心原则
 
-1. **验证命令** - 运行命令后必须验证执行成功（进程、端口、输出）
-2. **完整验收** - 任务完成前必须运行 typecheck + lint + test 并展示结果
-3. **Diff 摘要** - 每次修改文件必须提供 diff 摘要
-4. **测试先行** - 新增代码必须编写对应的单元测试
-5. **Plan Mode 禁止修改** - Plan Mode 下严禁执行任何修改操作（文件编辑、启动/终止服务、写入文件等），只能读取和制定计划
-6. **Skills 优先** - 执行任务前必须先检查可用 Skills，优先使用 Skills 提供的专业化能力，提高任务执行效率
+1. **先做规划** - 你在执行任务的时候必须输出 todolist 进行规划，禁止直接执行
+2. **验证命令** - 运行命令后必须验证执行成功（进程、端口、输出）
+3. **完整验收** - 任务完成前必须运行 typecheck + lint + test 并展示结果
+4. **Diff 摘要** - 每次修改文件必须提供 diff 摘要
+5. **测试先行** - 新增代码必须编写对应的单元测试
+6. **先确定可用工具列表** - 执行任务前先检查可用 Skills 和 Tools，切记使用正确的tool和skill 名，提高任务执行效率
+7. **沟通语言** - 输出的思考过程进行用中文表述，注意只是表述。
 
 ---
 
@@ -266,9 +267,9 @@ Example format:
 +++ b/src/views/login/index.vue
 @@ -1,5 +1,6 @@
  <script setup lang="ts">
--import { ref } from 'vue'
-+import { ref, onMounted } from 'vue'
-+// Added: onMounted for page load animation
+ -import { ref } from 'vue'
+ +import { ref, onMounted } from 'vue'
+ +// Added: onMounted for page load animation
 ```
 
 This helps the user understand:
@@ -356,91 +357,3 @@ describe('Login', () => {
 - Show the successful output
 
 ---
-
-## Skills 使用指南
-
-**IMPORTANT**: 执行任何任务前，必须先检查是否有适用的 Skill，优先使用 Skill 提高效率。
-
-### 可用 Skills
-
-| Skill             | 用途               | 适用场景                                        |
-| ----------------- | ------------------ | ----------------------------------------------- |
-| `tmux`            | 远程控制 tmux 会话 | 启动/管理开发服务器、查看实时输出、调试后台进程 |
-| `frontend-design` | 创建高质量前端界面 | 构建 Web 组件、页面、应用，生成创意且精美的代码 |
-| `file-search`     | 搜索代码库         | 搜索文本模式、语法感知的代码搜索                |
-
-### 使用方式
-
-在执行任务时，主动调用相关 Skill：
-
-```
-skill tmux          # 获取 tmux 操作指南
-skill frontend-design  # 获取前端设计指南
-skill file-search   # 获取代码搜索指南
-```
-
-### 适用场景示例
-
-| 任务类型             | 推荐 Skill        | 说明                                |
-| -------------------- | ----------------- | ----------------------------------- |
-| 启动/重启开发服务器  | `tmux`            | 使用 Skill 提供的标准化流程管理会话 |
-| 创建新的 UI 组件     | `frontend-design` | 获取设计模式和最佳实践              |
-| 查找代码中的函数定义 | `file-search`     | 使用语法感知搜索精确定位            |
-
-### 注意事项
-
-1. **优先检查** - 接到任务后，首先判断是否有适用的 Skill
-2. **主动使用** - 不要等待用户提示，主动调用 Skill
-3. **遵循指南** - 使用 Skill 后，严格遵循其提供的指导流程
-
----
-
-## Dev Container 维护
-
-### Dockerfile.ts 工具列表
-
-当前 Dockerfile.ts 已包含的工具：
-
-- git
-- vim
-- curl
-- procps (包含 ps, pkill 等)
-- openssh-server
-- tmux
-
-### 开发服务器管理
-
-使用 tmux 管理开发服务器，方便查看实时输出和调试：
-
-```bash
-tmux new-session -d -s vite 'npm run dev'  # 创建 vite 会话
-tmux ls                                     # 查看所有会话
-tmux attach -t vite                         # 进入 vite 会话
-tmux kill-session -t vite                   # 关闭 vite 会话
-```
-
-**重要**：操作 tmux 前应先调用 `skill tmux` 获取详细指南。
-
-### 镜像重建流程
-
-当需要添加新工具时：
-
-1. 修改 `Dockerfile.ts` 添加所需工具
-2. 更新本节文档，记录已添加的工具
-3. 提醒用户重新构建镜像：
-
-```bash
-# 重新构建镜像
-docker compose -f compose_dev.yaml build
-
-# 重启容器
-docker compose -f compose_dev.yaml up -d
-```
-
-### 常见需求
-
-- **Python/Django 后端开发**: 需要添加 Python 3、pip、poetry 等
-- **Docker-in-Docker**: 需要添加 docker-cli、docker-compose
-- **数据库工具**: 需要添加 postgresql-client、redis-cli 等
-
-**注意**：在开发过程中如果遇到缺失的工具，请更新本节和 Dockerfile.ts。

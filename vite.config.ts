@@ -16,6 +16,9 @@ export default defineConfig({
     headers: {
       'Cache-Control': 'no-store',
     },
+    hmr: {
+      overlay: true,
+    },
     proxy: {
       '/api': {
         target: 'http://172.29.167.191:4080',

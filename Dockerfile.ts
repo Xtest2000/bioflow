@@ -14,4 +14,6 @@ RUN apt-get update -y && \
        rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g opencode-ai
+RUN npm install -g oh-my-opencode@latest
+RUN oh-my-opencode install --no-tui --opencode-zen=yes --claude=no --gemini=no --copilot=no
 

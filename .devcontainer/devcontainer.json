@@ -1,5 +1,10 @@
 {
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
   "name": "test_vue",
+  "remoteEnv": {
+    "EDITOR":"code --wait",
+    "VISUAL":"code --wait"
+  },
   "dockerComposeFile": "../compose_dev.yaml",
   "service": "ts_dev",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",

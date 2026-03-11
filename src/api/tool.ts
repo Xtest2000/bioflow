@@ -5,6 +5,9 @@ import type {
   Tool,
   ToolDetailParams,
   ToolDetail,
+  AddToolParams,
+  AddToolResponse,
+  DeleteToolResponse,
 } from '@/types/tool.d'
 
 const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
@@ -55,6 +58,206 @@ export function getMockToolList(params: ToolListParams): ToolListResponse {
       toolDesc_en: 'Whole exome sequencing analysis tool',
       toolImg: '/data/cromwell_workdir/WES/logo.jpg',
       versions: ['V2.1.0.0'],
+    },
+    {
+      toolID: 6,
+      toolName: ' Methylation',
+      toolDesc: 'DNA甲基化分析工具',
+      toolDesc_en: 'DNA methylation analysis tool',
+      toolImg: '/data/cromwell_workdir/Methylation/logo.jpg',
+      versions: ['V1.0.0.0'],
+    },
+    {
+      toolID: 7,
+      toolName: 'ChIP-Seq',
+      toolDesc: 'ChIP-seq 蛋白结合位点分析',
+      toolDesc_en: 'ChIP-seq protein binding site analysis',
+      toolImg: '/data/cromwell_workdir/ChIPSeq/logo.jpg',
+      versions: ['V2.0.0.0', 'V1.5.0.0'],
+    },
+    {
+      toolID: 8,
+      toolName: 'ATAC-Seq',
+      toolDesc: 'ATAC-seq 染色质可及性分析',
+      toolDesc_en: 'ATAC-seq chromatin accessibility analysis',
+      toolImg: '/data/cromwell_workdir/ATACSeq/logo.jpg',
+      versions: ['V1.2.0.0'],
+    },
+    {
+      toolID: 9,
+      toolName: 'HiC',
+      toolDesc: '三维基因组结构分析',
+      toolDesc_en: '3D genome structure analysis',
+      toolImg: '/data/cromwell_workdir/HiC/logo.jpg',
+      versions: ['V3.0.0.0'],
+    },
+    {
+      toolID: 10,
+      toolName: 'Single-Cell RNA',
+      toolDesc: '单细胞RNA测序分析',
+      toolDesc_en: 'Single-cell RNA sequencing analysis',
+      toolImg: '/data/cromwell_workdir/SingleCellRNA/logo.jpg',
+      versions: ['V1.0.0.0'],
+    },
+    {
+      toolID: 11,
+      toolName: 'Single-Cell ATAC',
+      toolDesc: '单细胞ATAC测序分析',
+      toolDesc_en: 'Single-cell ATAC sequencing analysis',
+      toolImg: '/data/cromwell_workdir/SingleCellATAC/logo.jpg',
+      versions: ['V1.0.0.0'],
+    },
+    {
+      toolID: 12,
+      toolName: 'Multi-Omics',
+      toolDesc: '多组学整合分析',
+      toolDesc_en: 'Multi-omics integration analysis',
+      toolImg: '/data/cromwell_workdir/MultiOmics/logo.jpg',
+      versions: ['V2.0.0.0'],
+    },
+    {
+      toolID: 13,
+      toolName: 'Long-Read',
+      toolDesc: '长读长测序分析',
+      toolDesc_en: 'Long-read sequencing analysis',
+      toolImg: '/data/cromwell_workdir/LongRead/logo.jpg',
+      versions: ['V1.5.0.0'],
+    },
+    {
+      toolID: 14,
+      toolName: 'Metagenomics',
+      toolDesc: '宏基因组分析',
+      toolDesc_en: 'Metagenomics analysis',
+      toolImg: '/data/cromwell_workdir/Metagenomics/logo.jpg',
+      versions: ['V2.0.0.0'],
+    },
+    {
+      toolID: 15,
+      toolName: 'VarScan',
+      toolDesc: '变异检测工具',
+      toolDesc_en: 'Variant detection tool',
+      toolImg: '/data/cromwell_workdir/VarScan/logo.jpg',
+      versions: ['V2.4.0.0'],
+    },
+    {
+      toolID: 16,
+      toolName: 'Strelka',
+      toolDesc: '体细胞变异检测',
+      toolDesc_en: 'Somatic variant detection',
+      toolImg: '/data/cromwell_workdir/Strelka/logo.jpg',
+      versions: ['V2.9.0.0'],
+    },
+    {
+      toolID: 17,
+      toolName: 'Mutect2',
+      toolDesc: '肿瘤突变检测',
+      toolDesc_en: 'Tumor mutation detection',
+      toolImg: '/data/cromwell_workdir/Mutect2/logo.jpg',
+      versions: ['V4.0.0.0'],
+    },
+    {
+      toolID: 18,
+      toolName: 'GATK',
+      toolDesc: '基因组分析工具包',
+      toolDesc_en: 'Genome Analysis Toolkit',
+      toolImg: '/data/cromwell_workdir/GATK/logo.jpg',
+      versions: ['V4.2.0.0', 'V4.1.0.0'],
+    },
+    {
+      toolID: 19,
+      toolName: 'FreeBayes',
+      toolDesc: '贝叶斯变异检测',
+      toolDesc_en: 'Bayesian variant detection',
+      toolImg: '/data/cromwell_workdir/FreeBayes/logo.jpg',
+      versions: ['V1.3.0.0'],
+    },
+    {
+      toolID: 20,
+      toolName: 'DeepVariant',
+      toolDesc: '深度学习变异检测',
+      toolDesc_en: 'Deep learning variant detection',
+      toolImg: '/data/cromwell_workdir/DeepVariant/logo.jpg',
+      versions: ['V1.5.0.0'],
+    },
+    {
+      toolID: 21,
+      toolName: ' anesthesia',
+      toolDesc: '麻醉管理工具',
+      toolDesc_en: 'Anesthesia management tool',
+      toolImg: '/data/cromwell_workdir/Anesthesia/logo.jpg',
+      versions: ['V1.0.0.0'],
+    },
+    {
+      toolID: 22,
+      toolName: '监护仪分析',
+      toolDesc: '监护仪数据可视化',
+      toolDesc_en: 'Monitor data visualization',
+      toolImg: '/data/cromwell_workdir/Monitor/logo.jpg',
+      versions: ['V2.0.0.0'],
+    },
+    {
+      toolID: 23,
+      toolName: '质谱分析',
+      toolDesc: '蛋白质组质谱分析',
+      toolDesc_en: 'Proteomics mass spectrometry analysis',
+      toolImg: '/data/cromwell_workdir/MassSpec/logo.jpg',
+      versions: ['V3.0.0.0'],
+    },
+    {
+      toolID: 24,
+      toolName: '结构预测',
+      toolDesc: '蛋白质结构预测',
+      toolDesc_en: 'Protein structure prediction',
+      toolImg: '/data/cromwell_workdir/Structure/logo.jpg',
+      versions: ['V2.0.0.0'],
+    },
+    {
+      toolID: 25,
+      toolName: '通路分析',
+      toolDesc: 'KEGG/GO通路富集分析',
+      toolDesc_en: 'KEGG/GO pathway enrichment analysis',
+      toolImg: '/data/cromwell_workdir/Pathway/logo.jpg',
+      versions: ['V1.0.0.0'],
+    },
+    {
+      toolID: 26,
+      toolName: '网络分析',
+      toolDesc: 'PPI网络构建分析',
+      toolDesc_en: 'PPI network construction analysis',
+      toolImg: '/data/cromwell_workdir/Network/logo.jpg',
+      versions: ['V1.0.0.0'],
+    },
+    {
+      toolID: 27,
+      toolName: '甲基化',
+      toolDesc: '甲基化位点分析',
+      toolDesc_en: 'Methylation site analysis',
+      toolImg: '/data/cromwell_workdir/Methyl/logo.jpg',
+      versions: ['V2.0.0.0'],
+    },
+    {
+      toolID: 28,
+      toolName: '拷贝数',
+      toolDesc: '拷贝数变异检测',
+      toolDesc_en: 'Copy number variation detection',
+      toolImg: '/data/cromwell_workdir/CNV2/logo.jpg',
+      versions: ['V1.5.0.0'],
+    },
+    {
+      toolID: 29,
+      toolName: '融合基因',
+      toolDesc: '基因融合检测',
+      toolDesc_en: 'Gene fusion detection',
+      toolImg: '/data/cromwell_workdir/Fusion/logo.jpg',
+      versions: ['V2.0.0.0'],
+    },
+    {
+      toolID: 30,
+      toolName: '免疫分型',
+      toolDesc: '肿瘤免疫细胞分型',
+      toolDesc_en: 'Tumor immune cell typing',
+      toolImg: '/data/cromwell_workdir/Immune/logo.jpg',
+      versions: ['V1.0.0.0'],
     },
   ]
 
@@ -152,4 +355,32 @@ export async function fetchToolDetail(params: ToolDetailParams): Promise<ToolDet
   }
 
   return getToolDetail(params)
+}
+
+export async function addTool(params: AddToolParams): Promise<AddToolResponse> {
+  const response = await api.post<AddToolResponse>('/analysis/addTool/', params)
+  return response.data
+}
+
+export async function deleteTool(toolID: number): Promise<DeleteToolResponse> {
+  if (isMockMode) {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    const isSuccess = Math.random() > 0.3
+    if (isSuccess) {
+      return {
+        code: 200,
+        message: '删除成功',
+        toolID: String(toolID),
+      }
+    } else {
+      return {
+        code: 500,
+        message: '删除失败: 服务器错误',
+        toolID: String(toolID),
+      }
+    }
+  }
+
+  const response = await api.post<DeleteToolResponse>('/analysis/deleteTool/', { toolID })
+  return response.data
 }
