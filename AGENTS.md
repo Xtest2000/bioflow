@@ -10,9 +10,113 @@ Guide for agentic coding agents operating in this Vue 3 + TypeScript repository.
 2. **验证命令** - 运行命令后必须验证执行成功（进程、端口、输出）
 3. **完整验收** - 任务完成前必须运行 typecheck + lint + test 并展示结果
 4. **Diff 摘要** - 每次修改文件必须提供 diff 摘要
-5. **测试先行** - 新增代码必须编写对应的单元测试
-6. **先确定可用工具列表** - 执行任务前先检查可用 Skills 和 Tools，切记使用正确的tool和skill 名，提高任务执行效率
+5. **测试先行** - 新增代码必须编写对应的单元测试和端到端测试
+6. **先确定可用工具列表** - 执行任务前先检查可用 Skills 和 Tools，切记使用正确的 tool 和 skill 名，提高任务执行效率
 7. **沟通语言** - 输出的思考过程进行用中文表述，注意只是表述。
+
+---
+
+## 🛡️ Mandatory Skills (强制技能加载)
+
+**CRITICAL**: This session MUST load these skills for compliance:
+
+### 1. Delegation Enforcer (委托强制执行)
+
+- **Skill**: `delegation-enforcer`
+- **Purpose**: ENFORCES delegation-first behavior, prevents direct implementation
+- **Trigger**: Auto-loaded, executes BEFORE any action
+- **Key Protocol**: Pre-Action Self-Check (STOP → Classify → Delegate)
+
+### 2. Pre-Action Self-Check (行动前自检)
+
+- **Skill**: `pre-action-self-check`
+- **Purpose**: Mandatory checklist before ANY implementation
+- **Trigger**: Before edits, commands, file operations
+- **Output**: Verbalize intent, delegation decision, category selection
+
+### 3. Operation Tracker (操作追踪)
+
+- **Skill**: `operation-tracker`
+- **Purpose**: Prevent context exhaustion from accumulated operations
+- **Thresholds**:
+  - > 5 reads without delegation → AUTO-DELEGATE
+  - > 3 edits without delegation → AUTO-DELEGATE
+  - > 2 same-file turns → WARN and delegate
+- **State**: `~/.operation-tracker/state.yaml`
+
+---
+
+## 🎯 Delegation Compliance Protocol
+
+### Pre-Action Checklist (MANDATORY)
+
+Before ANY action, MUST verbalize:
+
+```markdown
+### 🛑 Pre-Action Self-Check
+
+**Intent**: {research/implementation/investigation/evaluation/fix/open-ended}
+
+**Delegation Decision**:
+
+- Trivial? □ YES □ NO
+- Multi-step? □ YES □ NO
+- Code changes? □ YES □ NO
+- **Verdict**: DELEGATE / PROCEED
+
+**Category**: {visual-engineering|ultrabrain|deep|quick|writing|artistry}
+**Skills**: {skill-1, skill-2, ...}
+**Parallel**: □ YES (N agents) □ NO
+
+**Next Action**: {delegating / proceeding with X}
+```
+
+### Category Selection Rules
+
+| Task Domain           | MUST Use Category    | Required Skills                     |
+| --------------------- | -------------------- | ----------------------------------- |
+| UI/Styling/CSS/Layout | `visual-engineering` | `frontend-design`, `frontend-ui-ux` |
+| Hard logic/algorithms | `ultrabrain`         | None                                |
+| Research + implement  | `deep`               | `file-search`                       |
+| Single-file typo      | `quick`              | None                                |
+| Documentation         | `writing`            | None                                |
+| Creative design       | `artistry`           | `frontend-design`                   |
+
+**⚠️ ANTI-PATTERN**: Visual work in `quick` category → INFERIOR OUTPUT
+
+### Mandatory Delegation Prompt Structure
+
+When delegating, prompt **MUST** include ALL 6 sections (5+ lines each):
+
+1. **TASK**: Atomic, specific goal
+2. **EXPECTED OUTCOME**: Concrete deliverables with success criteria
+3. **REQUIRED TOOLS**: Explicit whitelist
+4. **MUST DO**: Exhaustive requirements
+5. **MUST NOT DO**: Forbidden actions
+6. **CONTEXT**: File paths, patterns, constraints
+
+### Session Continuity (MANDATORY)
+
+Every `task()` output includes `session_id`. **ALWAYS USE IT**:
+
+```typescript
+// CORRECT: Resume preserves context
+task((session_id = 'ses_abc123'), (load_skills = []), (prompt = 'Fix: Type error on line 42'))
+```
+
+**Why**: Saves 70%+ tokens, preserves full conversation context
+
+---
+
+## 🚨 Violation Recovery
+
+If you catch yourself implementing directly:
+
+1. **STOP** all edits immediately
+2. **LOG** violation: "VIOLATION: Attempted direct implementation"
+3. **REVERT** changes if any made
+4. **DELEGATE** via `task()` to appropriate agent
+5. **VERIFY** subagent completes correctly
 
 ---
 
