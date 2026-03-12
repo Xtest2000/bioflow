@@ -4,9 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToolStore } from '@/stores/tool'
 import { storeToRefs } from 'pinia'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Loading, Box, Plus, Delete } from '@element-plus/icons-vue'
+import { ArrowLeft, Loading, Box, Plus, Delete, Download, Upload } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import type { ToolParameter } from '@/types/tool.d'
+import * as XLSX from 'xlsx'
 
 const route = useRoute()
 const router = useRouter()
@@ -144,6 +145,149 @@ function getPlaceholder(param: ToolParameter): string {
       return `请输入${param.name}`
   }
 }
+
+// 下载参数模板
+function downloadTemplate() {
+  if (toolParameters.value.length === 0) {
+    ElMessage.warning('暂无工具参数')
+    return
+  }
+
+  // 构建表头
+  const headers = ['任务名称', '项目名称', '是否序列执行']
+  toolParameters.value.forEach((param) => {
+    headers.push(param.name)
+  })
+
+  // 构建模板数据（添加一行示例数据）
+  const templateData = [
+    ['示例任务', '示例项目', 'false'],
+    ...toolParameters.value.map((param) => {
+      if (param.default !== undefined) {
+        return String(param.default)
+      }
+      switch (param.controlType) {
+        case 'boolean':
+          return 'false'
+        case 'number':
+          return '0'
+        default:
+          return ''
+      }
+    }),
+  ]
+
+  // 创建工作表
+  const ws = XLSX.utils.aoa_to_sheet([headers, templateData])
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, '任务参数模板')
+
+  // 下载文件
+  XLSX.writeFile(wb, '任务参数模板.xlsx')
+  ElMessage.success('模板下载成功')
+}
+
+// 模板填充 - 选择 Excel 文件
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+function triggerFileSelect() {
+  fileInputRef.value?.click()
+}
+
+function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const data = e.target?.result
+      const workbook = XLSX.read(data, { type: 'binary' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
+
+      if (jsonData.length < 2) {
+        ElMessage.warning('模板文件为空或格式不正确')
+        return
+      }
+
+      // 解析表头
+      const headers = jsonData[0].map((h) => String(h))
+      const taskNameIndex = headers.indexOf('任务名称')
+      const projectNameIndex = headers.indexOf('项目名称')
+      const isSequenceIndex = headers.indexOf('是否序列执行')
+
+      if (taskNameIndex === -1 || projectNameIndex === -1) {
+        ElMessage.error('模板缺少必要列：任务名称、项目名称')
+        return
+      }
+
+      // 解析参数列索引
+      const paramIndices: Record<string, number> = {}
+      toolParameters.value.forEach((param) => {
+        const index = headers.indexOf(param.name)
+        if (index !== -1) {
+          paramIndices[param.key] = index
+        }
+      })
+
+      // 解析数据行
+      const newTasks: TaskItem[] = []
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i]
+        if (!row[taskNameIndex] && !row[projectNameIndex]) continue
+
+        const task: TaskItem = createEmptyTask()
+        task.taskName = String(row[taskNameIndex] || '')
+        task.projectName = String(row[projectNameIndex] || '')
+
+        if (isSequenceIndex !== -1) {
+          const seqValue = String(row[isSequenceIndex]).toLowerCase()
+          task.isSequence = seqValue === 'true' || seqValue === '1' || seqValue === '是'
+        }
+
+        // 填充参数
+        Object.entries(paramIndices).forEach(([key, index]) => {
+          const param = toolParameters.value.find((p) => p.key === key)
+          if (param && row[index] !== undefined && row[index] !== '') {
+            const value = String(row[index])
+            switch (param.controlType) {
+              case 'number':
+                task.params[key] = Number(value) || 0
+                break
+              case 'boolean':
+                task.params[key] = value.toLowerCase() === 'true' || value === '1' || value === '是'
+                break
+              default:
+                task.params[key] = value
+            }
+          }
+        })
+
+        newTasks.push(task)
+      }
+
+      if (newTasks.length === 0) {
+        ElMessage.warning('未解析到有效任务数据')
+        return
+      }
+
+      // 替换或追加任务
+      taskList.value = newTasks
+      ElMessage.success(`成功导入 ${newTasks.length} 个任务`)
+    } catch (error) {
+      console.error('解析 Excel 文件失败:', error)
+      ElMessage.error('解析 Excel 文件失败，请检查文件格式')
+    }
+  }
+
+  reader.readAsBinaryString(file)
+
+  // 重置 input 以便再次选择同一文件
+  target.value = ''
+}
 </script>
 
 <template>
@@ -168,6 +312,17 @@ function getPlaceholder(param: ToolParameter): string {
             <el-tag>版本：{{ version }}</el-tag>
             <span class="tool-id">工具 ID: {{ toolId }}</span>
           </div>
+        </div>
+        <div class="tool-actions">
+          <el-button :icon="Download" @click="downloadTemplate">下载参数模板</el-button>
+          <el-button :icon="Upload" @click="triggerFileSelect">模板填充</el-button>
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept=".xlsx,.xls"
+            style="display: none"
+            @change="handleFileSelect"
+          />
         </div>
       </div>
 
@@ -357,6 +512,12 @@ function getPlaceholder(param: ToolParameter): string {
 
 .tool-id {
   color: #64748b;
+}
+
+.tool-actions {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
 }
 
 .task-list-header {
