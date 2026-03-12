@@ -173,7 +173,6 @@ function getPlaceholder(param: ToolParameter): string {
 
       <div class="task-list-header">
         <h2>任务列表</h2>
-        <el-button type="primary" :icon="Plus" @click="addTask">添加任务</el-button>
       </div>
 
       <div v-for="(task, taskIndex) in taskList" :key="taskIndex" class="task-card-wrapper">
@@ -286,7 +285,7 @@ function getPlaceholder(param: ToolParameter): string {
       </div>
 
       <div class="form-actions">
-        <el-button @click="handleBack">取消</el-button>
+        <el-button type="primary" :icon="Plus" @click="addTask">添加任务</el-button>
         <el-button type="primary" :loading="submitting" @click="handleSubmit">
           批量提交 (共{{ taskList.length }}个任务)
         </el-button>
