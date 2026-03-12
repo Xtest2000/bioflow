@@ -6,6 +6,9 @@ import {
   fetchToolDetail as fetchToolDetailApi,
   addTool as addToolApi,
   deleteTool as deleteToolApi,
+  fetchToolParameter,
+  fetchSubmitTask,
+  fetchBatchSubmitTask,
 } from '@/api/tool'
 import type {
   Tool,
@@ -13,6 +16,7 @@ import type {
   ToolDetail,
   ToolDetailParams,
   DeleteToolResponse,
+  ToolParameter,
 } from '@/types/tool.d'
 
 export const useToolStore = defineStore('tool', () => {
@@ -31,6 +35,14 @@ export const useToolStore = defineStore('tool', () => {
   const deleteDialogVisible = ref(false)
   const selectedToolId = ref<number | null>(null)
   const addPackagePath = ref('')
+
+  // Task submission related states
+  const toolParameters = ref<ToolParameter[]>([])
+  const submitting = ref(false)
+  const submitError = ref<string | null>(null)
+  const submitSuccess = ref(false)
+  const submitTaskId = ref<string | null>(null)
+  const toolRealTimeAnalysis = ref(false)
 
   async function fetchTools(pageNum = 1, pageSize = 10) {
     isLoading.value = true
@@ -136,6 +148,81 @@ export const useToolStore = defineStore('tool', () => {
     }
   }
 
+  async function fetchToolParameters(toolID: number, version: string) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await fetchToolParameter({ toolID, version })
+      toolParameters.value = response.params
+      toolRealTimeAnalysis.value = response.tool_real_time_analysis
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '获取工具参数失败'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function submitTask(
+    toolID: number,
+    version: string,
+    parameters: Record<string, string | number | boolean>
+  ) {
+    submitting.value = true
+    submitSuccess.value = false
+    submitError.value = null
+    try {
+      const response = await fetchSubmitTask({ toolID, version, parameters })
+      if (response.code === 200) {
+        submitSuccess.value = true
+        submitTaskId.value = response.taskID || null
+        ElMessage.success('任务提交成功')
+      } else {
+        throw new Error(response.message || '任务提交失败')
+      }
+    } catch (e) {
+      submitError.value = e instanceof Error ? e.message : '任务提交失败'
+      ElMessage.error(submitError.value)
+    } finally {
+      submitting.value = false
+    }
+  }
+
+  async function submitBatchTask(
+    toolID: number,
+    version: string,
+    tasks: Array<{
+      taskName: string
+      projectName: string
+      is_sequence: string
+      params: Record<string, string | number | boolean>
+    }>
+  ) {
+    submitting.value = true
+    submitSuccess.value = false
+    submitError.value = null
+    try {
+      const response = await fetchBatchSubmitTask({ toolID, version, list: tasks })
+      if (response.code === 200) {
+        submitSuccess.value = true
+        ElMessage.success(`成功提交 ${tasks.length} 个任务`)
+      } else {
+        throw new Error(response.message || '任务提交失败')
+      }
+    } catch (e) {
+      submitError.value = e instanceof Error ? e.message : '任务提交失败'
+      ElMessage.error(submitError.value)
+    } finally {
+      submitting.value = false
+    }
+  }
+
+  function resetSubmitState() {
+    submitting.value = false
+    submitError.value = null
+    submitSuccess.value = false
+    submitTaskId.value = null
+  }
+
   function $reset() {
     tools.value = []
     pagination.value = {
@@ -160,8 +247,18 @@ export const useToolStore = defineStore('tool', () => {
     deleteDialogVisible,
     selectedToolId,
     addPackagePath,
+    toolParameters,
+    submitting,
+    submitError,
+    submitSuccess,
+    submitTaskId,
+    toolRealTimeAnalysis,
     fetchTools,
     fetchToolDetail,
+    fetchToolParameters,
+    submitTask,
+    submitBatchTask,
+    resetSubmitState,
     setSearchName,
     openAddDialog,
     closeAddDialog,

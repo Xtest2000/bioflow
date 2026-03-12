@@ -33,10 +33,22 @@ function handleSizeChange(size: number) {
   toolStore.fetchTools(1, size)
 }
 
-function handleUseTool(tool: { toolID: number }) {
+// 工具详情页跳转
+function handleViewDetail(tool: { toolID: number }) {
   const version = selectedVersions.value[tool.toolID]
   router.push({
     path: `/tools/${tool.toolID}`,
+    query: {
+      version: version || tools.value.find((t) => t.toolID === tool.toolID)?.versions[0] || '',
+    },
+  })
+}
+
+// 任务投递页跳转
+function handleUseTool(tool: { toolID: number }) {
+  const version = selectedVersions.value[tool.toolID]
+  router.push({
+    path: `/tools/${tool.toolID}/submit`,
     query: {
       version: version || tools.value.find((t) => t.toolID === tool.toolID)?.versions[0] || '',
     },
@@ -143,6 +155,7 @@ function openDeleteDialog(toolId: number) {
             <el-button type="danger" link size="small" @click="openDeleteDialog(tool.toolID)">
               <el-icon :size="16"><Delete /></el-icon>
             </el-button>
+            <el-button @click="handleViewDetail(tool)">工具详情</el-button>
             <el-button type="primary" @click="handleUseTool(tool)">立即使用</el-button>
           </div>
         </el-card>

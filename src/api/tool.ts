@@ -8,6 +8,10 @@ import type {
   AddToolParams,
   AddToolResponse,
   DeleteToolResponse,
+  ToolParameterParams,
+  ToolParameterResponse,
+  SubmitTaskParams,
+  SubmitTaskResponse,
 } from '@/types/tool.d'
 
 const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
@@ -383,4 +387,184 @@ export async function deleteTool(toolID: number): Promise<DeleteToolResponse> {
 
   const response = await api.post<DeleteToolResponse>('/analysis/deleteTool/', { toolID })
   return response.data
+}
+
+// Tool Parameter API
+export async function getToolparameter(
+  params: ToolParameterParams
+): Promise<ToolParameterResponse> {
+  const response = await api.post<ToolParameterResponse>('/analysis/getToolparameter/', params)
+  return response.data
+}
+
+export async function getMockToolparameter(
+  params: ToolParameterParams
+): Promise<ToolParameterResponse> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return {
+    params: [
+      {
+        controlType: 'file',
+        default: './qc/q_value.py',
+        desc: '质控脚本',
+        desc_en: 'qc script',
+        key: 'CNV_seq_baozheng_Pipeline.qc_script',
+        name: '质控脚本',
+        name_en: 'qc script',
+        required: true,
+        type: 'File',
+        visible: false,
+        enabled_for_sequencing: true,
+      },
+      {
+        controlType: 'file',
+        default: './bed_file/GC_100kb_2_filter.bed',
+        desc: '染色体 bed 文件',
+        desc_en: 'chr bed file',
+        key: 'CNV_seq_baozheng_Pipeline.bed_file',
+        name: '染色体 bed 文件',
+        name_en: 'chr bed file',
+        required: true,
+        type: 'File',
+        visible: false,
+      },
+      {
+        controlType: 'file',
+        default: './ref/GRCh38_Y_mask.fa',
+        desc: '参考基因组文件',
+        desc_en: 'ref file',
+        key: 'CNV_seq_baozheng_Pipeline.GRch38_ref_file',
+        name: '参考基因组文件',
+        name_en: 'ref file',
+        required: true,
+        type: 'File',
+        visible: false,
+      },
+      {
+        controlType: 'string',
+        desc: '样本名',
+        desc_en: 'sample name',
+        key: 'CNV_seq_baozheng_Pipeline.sample_name',
+        name: '样本名',
+        name_en: 'sample name',
+        required: true,
+        type: 'String',
+        visible: true,
+      },
+      {
+        controlType: 'select',
+        desc: '样本类型',
+        desc_en: 'sample type',
+        key: 'CNV_seq_baozheng_Pipeline.sample_type',
+        name: '样本类型',
+        name_en: 'sample type',
+        options: ['羊水', '企业参考品'],
+        required: true,
+        type: 'String',
+        visible: true,
+      },
+    ],
+    toolID: params.toolID,
+    tool_real_time_analysis: false,
+  }
+}
+
+export async function fetchToolParameter(
+  params: ToolParameterParams
+): Promise<ToolParameterResponse> {
+  if (isMockMode) {
+    return getMockToolparameter(params)
+  }
+  return getToolparameter(params)
+}
+
+// Submit Task API
+export async function submitTask(params: SubmitTaskParams): Promise<SubmitTaskResponse> {
+  const response = await api.post<SubmitTaskResponse>('/analysis/submitTask/', params)
+  return response.data
+}
+
+export interface BatchSubmitTaskParams {
+  toolID: number
+  version: string
+  list: Array<{
+    taskName: string
+    projectName: string
+    is_sequence: string
+    params: Record<string, string | number | boolean>
+  }>
+}
+
+export interface BatchSubmitTaskResponse {
+  code: number
+  message: string
+  data?: Array<{
+    taskID: string
+    taskName: string
+    taskStatus: string
+  }>
+}
+
+export async function batchSubmitTask(
+  params: BatchSubmitTaskParams
+): Promise<BatchSubmitTaskResponse> {
+  const response = await api.post<BatchSubmitTaskResponse>('/analysis/taskPost/', params)
+  return response.data
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getMockSubmitTask(_params: SubmitTaskParams): Promise<SubmitTaskResponse> {
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  const isSuccess = Math.random() > 0.3
+  if (isSuccess) {
+    return {
+      code: 200,
+      message: '任务提交成功',
+      taskID: `task_${Date.now()}`,
+    }
+  } else {
+    return {
+      code: 500,
+      message: '任务提交失败',
+    }
+  }
+}
+
+export async function getMockBatchSubmitTask(
+  _params: BatchSubmitTaskParams
+): Promise<BatchSubmitTaskResponse> {
+  await new Promise((resolve) => setTimeout(resolve, 500))
+  const isSuccess = Math.random() > 0.3
+  if (isSuccess) {
+    return {
+      code: 200,
+      message: '批量任务提交成功',
+      data: _params.list.map((task, index) => ({
+        taskID: `task_${Date.now()}_${index}`,
+        taskName: task.taskName,
+        taskStatus: 'Submitted',
+      })),
+    }
+  } else {
+    return {
+      code: 500,
+      message: '批量任务提交失败',
+    }
+  }
+}
+
+export async function fetchSubmitTask(params: SubmitTaskParams): Promise<SubmitTaskResponse> {
+  if (isMockMode) {
+    return getMockSubmitTask(params)
+  }
+  return submitTask(params)
+}
+
+export async function fetchBatchSubmitTask(
+  params: BatchSubmitTaskParams
+): Promise<BatchSubmitTaskResponse> {
+  if (isMockMode) {
+    return getMockBatchSubmitTask(params)
+  }
+  return batchSubmitTask(params)
 }

@@ -35,6 +35,11 @@ const router = createRouter({
           component: () => import('@/views/tools/detail.vue'),
         },
         {
+          path: 'tools/:id/submit',
+          name: 'ToolSubmit',
+          component: () => import('@/views/tools/submit.vue'),
+        },
+        {
           path: 'tasks',
           name: 'Tasks',
           component: () => import('@/views/tasks/index.vue'),

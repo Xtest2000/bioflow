@@ -31,6 +31,7 @@ After project initialization:
 
 ```bash
 npm run dev          # Start development server
+npm run dev:mock     # Start dev server with mock data (前端模拟数据)
 npm run build        # Build for production
 npm run preview      # Preview production build
 npm run lint         # Run ESLint on all files
@@ -46,6 +47,58 @@ npm run test -- --grep "test name"         # Run tests matching pattern
 1. Check if process is running (`ps aux | grep vite`)
 2. Check if port is listening (`cat /proc/net/tcp | grep <port>`)
 3. For dev server, check the output shows "ready" and "Local:" URL
+
+> **Mock 模式**: 使用 `npm run dev:mock` 启动，前端生成模拟数据，无需后端服务。详见 [MOCK.md](./MOCK.md)
+
+---
+
+## Development Server Protocol (MANDATORY)
+
+**CRITICAL**: Development server MUST be started in a tmux session to prevent zombie processes.
+
+### Starting Dev Server
+
+```bash
+# Create new tmux session for dev server
+tmux new-session -d -s vite-dev "npm run dev"
+
+# Or manually attach and run
+tmux new-session -s vite-dev
+# Then run: npm run dev
+```
+
+### Stopping Dev Server
+
+```bash
+# Kill the tmux session (preferred)
+tmux kill-session -t vite-dev
+
+# Or send Ctrl+C to the session
+tmux send-keys -t vite-dev C-c
+tmux kill-session -t vite-dev
+```
+
+### Verification
+
+```bash
+# List all tmux sessions
+tmux list-sessions
+
+# Check vite process
+ps aux | grep vite | grep -v grep
+
+# Check if dev server is responding
+curl -s http://localhost:5173
+```
+
+### Why tmux is Required
+
+- **Prevents zombie processes**: Direct background processes leave defunct children
+- **Clean process management**: tmux properly handles child process lifecycle
+- **Easy restart**: Kill and recreate sessions cleanly
+- **Resource cleanup**: No orphaned processes after session termination
+
+**NEVER** run `npm run dev &` or background processes without tmux — this creates zombie processes that clutter the process table.
 
 ## Code Style Guidelines
 

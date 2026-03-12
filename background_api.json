@@ -239,8 +239,7 @@
           "name_en": "qc script",
           "required": true,
           "type": "File",
-          "visible": false,
-          "enabled_for_sequencing": true
+          "visible": false
         },
         {
           "controlType": "file",
@@ -339,6 +338,213 @@
       ],
       "toolID": 1,
       "tool_real_time_analysis": false
+    }
+  },
+  "taskPost": {
+    "request": {
+      "path": "/analysis/taskPost/",
+      "method": "POST",
+      "parameters": {
+        "toolID": "6",
+        "version": "V2.0.0.0",
+        "list": [
+          {
+            "taskName": "test",
+            "projectName": "test",
+            "is_sequence": "true/false",
+            "params": {
+              "CNV.sample_type": "test",
+              "CNV.sample_name": "test",
+              "CNV.input_fq_file": "/data/lihanyu/test_data/2407C05791011/2407C05791011_barcode1/2407C05791011_barcode1_01.fastq.gz",
+              "CNV.qc_script": "./qc/q_value.py",
+              "CNV.CN_script": "./CN_value/CN_calculate.py",
+              "CNV.template_file": "./result_report/templates/report_template.html",
+              "CNV.report_script": "./result_report/report.py",
+              "CNV.bed_file": "./bed_file/GC_100kb_2_filter.bed",
+              "CNV.GRch38_ref_file": "./ref/GRCh38_Y_mask.fa"
+            }
+          }
+        ]
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": [{ "taskID": 5, "taskName": "test", "taskStatus": "Submitted" }]
+  },
+  "getTaskList": {
+    "request": {
+      "path": "/analysis/getTaskList/",
+      "method": "POST",
+      "parameters": {
+        "pageNum": 1,
+        "pageSize": 10,
+        "startTime": "2023-08-15T14:30:00",
+        "endTime": "2023-08-15T14:30:00",
+        "taskStatus": "COMPLETE",
+        "toolName": "CNV",
+        "toolVersion": "V1.1.0.0",
+        "taskProject": "test"
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "tasks": [
+        {
+          "taskID": 19,
+          "taskName": "test",
+          "taskProjectName": "test",
+          "taskSendTime": "2026-01-27 14:51:53",
+          "taskRunTime": "00:01:10",
+          "taskStatus": "RUNNING",
+          "taskToolName": "CycloneCNV",
+          "taskToolVersion": "V1.1.0.0"
+        },
+        {
+          "taskID": 20,
+          "taskName": "test",
+          "taskProjectName": "test",
+          "taskSendTime": "2026-01-27 14:51:53",
+          "taskRunTime": "00:01:10",
+          "taskStatus": "RUNNING",
+          "taskToolName": "CycloneCNV",
+          "taskToolVersion": "V1.1.0.0"
+        }
+      ],
+      "pagination": {
+        "total": 2,
+        "pageSize": 10,
+        "totalPages": 1,
+        "currentPage": 1
+      }
+    }
+  },
+  "getTaskDetail": {
+    "request": {
+      "path": "/analysis/getTaskDetail/",
+      "method": "POST",
+      "parameters": {
+        "taskID": 9
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "taskEndTime": "2025-07-16 10:24:03",
+      "taskErrorLog": null,
+      "taskName": "test",
+      "taskParams": [
+        {
+          "desc": "test1234",
+          "key": "CNV.input_fq_file",
+          "name": "测序文件",
+          "required": true,
+          "type": "File",
+          "value": "/data/lihanyu/test_data/2407C05791011/2407C05791011_barcode1/2407C05791011_barcode1_01.fastq.gz",
+          "visible": true
+        },
+        {
+          "desc": "test12345",
+          "key": "CNV.sample_name",
+          "name": "样本名",
+          "required": true,
+          "type": "String",
+          "value": "test",
+          "visible": true
+        },
+        {
+          "desc": "test123456",
+          "key": "CNV.sample_type",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "test",
+          "visible": true
+        },
+        {
+          "default": "./qc/q_value.py",
+          "desc": "test123456",
+          "key": "CNV.qc_script",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "./qc/q_value.py",
+          "visible": false
+        },
+        {
+          "default": "./CN_value/CN_calculate.py",
+          "desc": "test123456",
+          "key": "CNV.CN_script",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "./CN_value/CN_calculate.py",
+          "visible": false
+        },
+        {
+          "default": "./result_report/templates/report_template.html",
+          "desc": "test123456",
+          "key": "CNV.template_file",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "./result_report/templates/report_template.html",
+          "visible": false
+        },
+        {
+          "default": "./result_report/report.py",
+          "desc": "test123456",
+          "key": "CNV.report_script",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "./result_report/report.py",
+          "visible": false
+        },
+        {
+          "default": "./bed_file/GC_100kb_2_filter.bed",
+          "desc": "test123456",
+          "key": "CNV.bed_file",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "./bed_file/GC_100kb_2_filter.bed",
+          "visible": false
+        },
+        {
+          "default": "./ref/GRCh38_Y_mask.fa",
+          "desc": "test123456",
+          "key": "CNV.GRch38_ref_file",
+          "name": "样本类型",
+          "required": true,
+          "type": "String",
+          "value": "./ref/GRCh38_Y_mask.fa",
+          "visible": false
+        }
+      ],
+      "taskPath": {},
+      "taskRunTime": "00:00:23",
+      "taskSendTime": "2025-07-16 10:23:40",
+      "taskStatus": "RUNNING",
+      "taskStep": [
+        {
+          "StepEndTime": "2025-07-16 10:24:03",
+          "StepExitCode": null,
+          "StepName": "CNV.mapping",
+          "StepRunTime": "00:00:06",
+          "StepStartTime": "2025-07-16 10:23:56",
+          "StepStderr": null,
+          "StepStdout": null
+        },
+        {
+          "StepEndTime": "2025-07-16 10:24:03",
+          "StepExitCode": null,
+          "StepName": "CNV.qc",
+          "StepRunTime": "00:00:06",
+          "StepStartTime": "2025-07-16 10:23:56",
+          "StepStderr": null,
+          "StepStdout": null
+        }
+      ],
+      "taskToolName": "CNV",
+      "taskToolVersion": "V3.0.0.0"
     }
   }
 }

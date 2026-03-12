@@ -60,3 +60,44 @@ export interface DeleteToolResponse {
   message: string
   toolID: string
 }
+
+export interface ToolParameter {
+  controlType: 'file' | 'string' | 'select' | 'number' | 'boolean'
+  key: string
+  name: string
+  name_en?: string
+  desc: string
+  desc_en?: string
+  type?: string
+  required: boolean
+  default?: string | number | boolean
+  visible?: boolean
+  enabled_for_sequencing?: boolean
+  options?: string[]
+}
+
+export interface ToolParameterResponse {
+  params: ToolParameter[]
+  toolID: number
+  tool_real_time_analysis: boolean
+}
+
+export interface ToolParameterParams {
+  toolID: number
+  version: string
+}
+
+export interface SubmitTaskParams {
+  toolID: number
+  version: string
+  parameters: Record<string, string | number | boolean | File>
+  taskName?: string
+  taskDescription?: string
+}
+
+export interface SubmitTaskResponse {
+  code: number
+  message: string
+  taskID?: string
+  data?: object
+}
