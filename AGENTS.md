@@ -22,6 +22,7 @@ Guide for agentic coding agents operating in this Vue 3 + TypeScript repository.
 | `delegation-enforcer`   | 强制委托优先，禁止直接实现     |
 | `pre-action-self-check` | 行动前自检：意图 → 分类 → 委托 |
 | `operation-tracker`     | 操作追踪，防止上下文耗尽       |
+| `safe-file-deletion`    | 删除文件前必须获得用户许可     |
 
 ---
 

@@ -546,5 +546,77 @@
       "taskToolName": "CNV",
       "taskToolVersion": "V3.0.0.0"
     }
+  },
+  "cancelTask": {
+    "request": {
+      "path": "/analysis/cancelTask/",
+      "method": "POST",
+      "parameters": {
+        "taskIds": ["9", "10"]
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "task_list": [
+        {
+          "status": "abort_initiated",
+          "taskID": 19,
+          "message": "Abort request accepted",
+          "code": 200
+        }
+      ],
+      "task_status": 200
+    }
+  },
+  "deleteTask": {
+    "request": {
+      "path": "/analysis/deleteTask/",
+      "method": "POST",
+      "parameters": {
+        "taskIds": ["9", "10"]
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "task_list": [
+        {
+          "toolID": 19,
+          "message": "Task deleted successfully",
+          "code": 200
+        }
+      ],
+      "task_status": 200
+    }
+  },
+  "getPathStructure": {
+    "request": {
+      "path": "/analysis/getPathStructure/",
+      "method": "POST",
+      "parameters": {
+        "path": "/data"
+      },
+      "X-CSRFToken": "******"
+    },
+    "reponse": {
+      "entries": [
+        {
+          "modified": 1753076410.9412537,
+          "modified_human": "2025-07-21 13:40:10",
+          "name": "analysis_dev",
+          "path": "/data/analysis_dev",
+          "size": 4096,
+          "type": "directory"
+        },
+        {
+          "modified": 1753076631.9014993,
+          "modified_human": "2025-07-21 13:43:51",
+          "name": "caddy",
+          "path": "/data/caddy",
+          "size": 4096,
+          "type": "directory"
+        }
+      ],
+      "path": "/data"
+    }
   }
 }

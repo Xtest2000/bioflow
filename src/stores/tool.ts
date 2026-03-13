@@ -10,6 +10,7 @@ import {
   fetchSubmitTask,
   fetchBatchSubmitTask,
 } from '@/api/tool'
+import { addMockTasks } from '@/api/task'
 import type {
   Tool,
   ToolListParams,
@@ -204,6 +205,18 @@ export const useToolStore = defineStore('tool', () => {
       const response = await fetchBatchSubmitTask({ toolID, version, list: tasks })
       if (response.code === 200) {
         submitSuccess.value = true
+        // 在 Mock 模式下，将新任务添加到任务列表
+        if (response.data && import.meta.env.VITE_MOCK_MODE === 'true') {
+          const now = new Date().toISOString()
+          const newTasks = response.data.map((task) => ({
+            id: task.taskID,
+            name: task.taskName,
+            status: task.taskStatus.toLowerCase() as 'running' | 'completed' | 'failed' | 'pending',
+            createdAt: now,
+            updatedAt: now,
+          }))
+          addMockTasks(newTasks)
+        }
         ElMessage.success(`成功提交 ${tasks.length} 个任务`)
       } else {
         throw new Error(response.message || '任务提交失败')
