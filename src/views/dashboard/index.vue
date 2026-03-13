@@ -26,16 +26,12 @@ import TaskOverview from '@/components/dashboard/TaskOverview.vue'
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+  align-items: start;
 }
 
 @media (max-width: 1200px) {
   .content-grid {
     grid-template-columns: 1fr;
   }
-}
-
-.left-panel,
-.right-panel {
-  min-height: 400px;
 }
 </style>

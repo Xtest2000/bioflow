@@ -62,10 +62,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.server-resources {
-  height: 100%;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;

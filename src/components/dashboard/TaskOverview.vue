@@ -2,28 +2,32 @@
 import { onMounted } from 'vue'
 import { useTaskStore } from '@/stores/task'
 import { storeToRefs } from 'pinia'
-import type { Task } from '@/types/task.d'
+import type { TaskStatus } from '@/types/task.d'
 import { Loading } from '@element-plus/icons-vue'
 
 const taskStore = useTaskStore()
 const { statistics, recentTasks, isLoading } = storeToRefs(taskStore)
 
-function getStatusType(status: Task['status']): '' | 'success' | 'warning' | 'info' | 'danger' {
-  const map: Record<Task['status'], '' | 'success' | 'warning' | 'info' | 'danger'> = {
-    running: 'warning',
-    completed: 'success',
-    failed: 'danger',
-    pending: 'info',
+function getStatusType(status: TaskStatus): '' | 'success' | 'warning' | 'info' | 'danger' {
+  const map: Record<TaskStatus, '' | 'success' | 'warning' | 'info' | 'danger'> = {
+    RUNNING: 'warning',
+    COMPLETE: 'success',
+    FAILED: 'danger',
+    SUBMITTED: 'info',
+    TERMINATED: 'info',
+    QUEUED: 'info',
   }
   return map[status]
 }
 
-function getStatusText(status: Task['status']): string {
-  const map: Record<Task['status'], string> = {
-    running: '运行中',
-    completed: '已完成',
-    failed: '失败',
-    pending: '等待中',
+function getStatusText(status: TaskStatus): string {
+  const map: Record<TaskStatus, string> = {
+    RUNNING: '运行中',
+    COMPLETE: '已完成',
+    FAILED: '失败',
+    SUBMITTED: '已提交',
+    TERMINATED: '已终止',
+    QUEUED: '排队中',
   }
   return map[status]
 }
@@ -82,18 +86,18 @@ onMounted(() => {
 
       <div class="recent-tasks">
         <div class="section-title">最近任务</div>
-        <el-table :data="recentTasks" style="width: 100%" size="small">
-          <el-table-column prop="name" label="任务名称" min-width="180" />
-          <el-table-column prop="status" label="状态" width="100">
+        <el-table :data="recentTasks.slice(0, 4)" style="width: 100%" size="small">
+          <el-table-column prop="taskName" label="任务名称" min-width="180" />
+          <el-table-column prop="taskStatus" label="状态" width="100">
             <template #default="{ row }">
-              <el-tag :type="getStatusType(row.status)" size="small">
-                {{ getStatusText(row.status) }}
+              <el-tag :type="getStatusType(row.taskStatus)" size="small">
+                {{ getStatusText(row.taskStatus) }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="updatedAt" label="更新时间" width="120">
+          <el-table-column prop="taskSendTime" label="更新时间" width="120">
             <template #default="{ row }">
-              {{ formatTime(row.updatedAt) }}
+              {{ formatTime(row.taskSendTime) }}
             </template>
           </el-table-column>
         </el-table>
@@ -103,10 +107,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.task-overview {
-  height: 100%;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;

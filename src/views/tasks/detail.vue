@@ -39,10 +39,6 @@ onMounted(() => {
   <div class="task-detail-page">
     <div class="page-header">
       <el-button :icon="ArrowLeft" @click="handleBack">返回任务列表</el-button>
-      <el-breadcrumb separator="/">
-        <el-breadcrumb-item :to="{ path: '/tasks' }">任务列表</el-breadcrumb-item>
-        <el-breadcrumb-item>任务详情</el-breadcrumb-item>
-      </el-breadcrumb>
     </div>
 
     <div v-if="isLoading" class="loading">
@@ -58,7 +54,7 @@ onMounted(() => {
               {{ taskDetail.taskStatus }}
             </el-tag>
             <span class="tool-info">
-              工具：{{ taskDetail.taskToolName }} v{{ taskDetail.taskToolVersion }}
+              工具：{{ taskDetail.taskToolName }} {{ taskDetail.taskToolVersion }}
             </span>
           </div>
         </div>
@@ -166,7 +162,7 @@ onMounted(() => {
 .page-header {
   margin-bottom: 24px;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 16px;
 }
 
