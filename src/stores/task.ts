@@ -1,6 +1,13 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { fetchTaskStatistics, fetchRecentTasks, getTaskList, getTaskDetail } from '@/api/task'
+import {
+  fetchTaskStatistics,
+  fetchRecentTasks,
+  getTaskList,
+  getTaskDetail,
+  fetchCancelTask,
+  fetchDeleteTask,
+} from '@/api/task'
 import type {
   TaskStatistics,
   TaskListItem,
@@ -80,6 +87,42 @@ export const useTaskStore = defineStore('task', () => {
     await Promise.all([fetchStatistics(), fetchRecentTasksList(), fetchTaskList()])
   }
 
+  async function cancelTasks(taskIds: string[]) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await fetchCancelTask({ taskIds })
+      if (response.task_status === 200) {
+        await fetchTaskList()
+        return { success: true, message: '任务取消成功' }
+      }
+      throw new Error('取消任务失败')
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '取消任务失败'
+      return { success: false, message: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function deleteTasks(taskIds: string[]) {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await fetchDeleteTask({ taskIds })
+      if (response.task_status === 200) {
+        await fetchTaskList()
+        return { success: true, message: '任务删除成功' }
+      }
+      throw new Error('删除任务失败')
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '删除任务失败'
+      return { success: false, message: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   function $reset() {
     statistics.value = null
     recentTasks.value = []
@@ -108,6 +151,8 @@ export const useTaskStore = defineStore('task', () => {
     fetchTaskList,
     fetchTaskDetail,
     fetchAll,
+    cancelTasks,
+    deleteTasks,
     $reset,
   }
 })

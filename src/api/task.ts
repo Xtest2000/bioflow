@@ -6,6 +6,10 @@ import type {
   TaskListResponse,
   TaskDetail,
   TaskListItem,
+  CancelTaskParams,
+  CancelTaskResponse,
+  DeleteTaskParams,
+  DeleteTaskResponse,
 } from '@/types/task.d'
 
 const isMockMode = import.meta.env.VITE_MOCK_MODE === 'true'
@@ -364,4 +368,53 @@ export async function fetchRecentTasks(): Promise<TaskListItem[]> {
     pageSize: 10,
   })
   return response.tasks
+}
+
+export async function cancelTask(params: CancelTaskParams): Promise<CancelTaskResponse> {
+  const response = await api.post<CancelTaskResponse>('/analysis/cancelTask/', params)
+  return response.data
+}
+
+export function getMockCancelTask(params: CancelTaskParams): CancelTaskResponse {
+  return {
+    task_list: params.taskIds.map((id) => ({
+      status: 'abort_initiated',
+      taskID: Number(id),
+      message: 'Abort request accepted',
+      code: 200,
+    })),
+    task_status: 200,
+  }
+}
+
+export async function fetchCancelTask(params: CancelTaskParams): Promise<CancelTaskResponse> {
+  if (isMockMode) {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    return getMockCancelTask(params)
+  }
+  return cancelTask(params)
+}
+
+export async function deleteTask(params: DeleteTaskParams): Promise<DeleteTaskResponse> {
+  const response = await api.post<DeleteTaskResponse>('/analysis/deleteTask/', params)
+  return response.data
+}
+
+export function getMockDeleteTask(params: DeleteTaskParams): DeleteTaskResponse {
+  return {
+    task_list: params.taskIds.map((id) => ({
+      toolID: Number(id),
+      message: 'Task deleted successfully',
+      code: 200,
+    })),
+    task_status: 200,
+  }
+}
+
+export async function fetchDeleteTask(params: DeleteTaskParams): Promise<DeleteTaskResponse> {
+  if (isMockMode) {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    return getMockDeleteTask(params)
+  }
+  return deleteTask(params)
 }

@@ -85,3 +85,34 @@ export interface TaskDetail {
   taskToolName: string
   taskToolVersion: string
 }
+
+export interface CancelTaskParams {
+  taskIds: string[]
+}
+
+export interface CancelTaskResult {
+  status: string
+  taskID: number
+  message: string
+  code: number
+}
+
+export interface CancelTaskResponse {
+  task_list: CancelTaskResult[]
+  task_status: number
+}
+
+export interface DeleteTaskParams {
+  taskIds: string[]
+}
+
+export interface DeleteTaskResult {
+  toolID: number
+  message: string
+  code: number
+}
+
+export interface DeleteTaskResponse {
+  task_list: DeleteTaskResult[]
+  task_status: number
+}

@@ -3,7 +3,8 @@ import { reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTaskStore } from '@/stores/task'
 import { storeToRefs } from 'pinia'
-import { Refresh, Search } from '@element-plus/icons-vue'
+import { Refresh, Search, CircleClose, Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { TaskListItem } from '@/types/task'
 
 const router = useRouter()
@@ -84,6 +85,56 @@ function handleViewDetail(row: TaskListItem) {
 
 function handleRefresh() {
   taskStore.fetchTaskList({ pageNum: 1 })
+}
+
+function canCancel(status: string): boolean {
+  return ['RUNNING', 'SUBMITTED', 'QUEUED'].includes(status)
+}
+
+function canDelete(status: string): boolean {
+  return ['COMPLETE', 'FAILED', 'TERMINATED'].includes(status)
+}
+
+async function handleCancel(row: TaskListItem) {
+  try {
+    await ElMessageBox.confirm(`确定要取消任务「${row.taskName}」吗？`, '取消任务', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+
+    const result = await taskStore.cancelTasks([String(row.taskID)])
+    if (result.success) {
+      ElMessage.success(result.message)
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch {
+    // 用户取消操作
+  }
+}
+
+async function handleDelete(row: TaskListItem) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除任务「${row.taskName}」吗？删除后无法恢复。`,
+      '删除任务',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
+    const result = await taskStore.deleteTasks([String(row.taskID)])
+    if (result.success) {
+      ElMessage.success(result.message)
+    } else {
+      ElMessage.error(result.message)
+    }
+  } catch {
+    // 用户取消操作
+  }
 }
 
 onMounted(() => {
@@ -195,10 +246,30 @@ onMounted(() => {
             {{ row.taskRunTime ? formatTime(row.taskRunTime) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleViewDetail(row)">
               详情
+            </el-button>
+            <el-button
+              v-if="canCancel(row.taskStatus)"
+              type="warning"
+              link
+              size="small"
+              :icon="CircleClose"
+              @click="handleCancel(row)"
+            >
+              取消
+            </el-button>
+            <el-button
+              v-if="canDelete(row.taskStatus)"
+              type="danger"
+              link
+              size="small"
+              :icon="Delete"
+              @click="handleDelete(row)"
+            >
+              删除
             </el-button>
           </template>
         </el-table-column>
