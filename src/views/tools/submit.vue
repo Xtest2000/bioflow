@@ -8,6 +8,8 @@ import { ArrowLeft, Loading, Box, Plus, Delete, Download, Upload } from '@elemen
 import type { FormInstance, FormRules } from 'element-plus'
 import type { ToolParameter } from '@/types/tool.d'
 import * as XLSX from 'xlsx'
+import ArrayInput from '@/components/common/ArrayInput.vue'
+import PathSelector from '@/components/common/PathSelector.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +28,16 @@ function fromSafeKey(safeKey: string): string {
   return safeKey.replace(/__/g, '.')
 }
 
+// 解析参数类型，返回基础类型和是否为数组
+function getParamType(param: ToolParameter): { base: string; isArray: boolean } {
+  const typeStr = param.type || 'String'
+  const match = typeStr.match(/^Array\[(.+)\]$/)
+  if (match) {
+    return { base: match[1], isArray: true }
+  }
+  return { base: typeStr, isArray: false }
+}
+
 // 安全的参数列表，用于模板渲染
 const safeParameters = computed(() =>
   toolParameters.value.map((param) => ({
@@ -40,29 +52,38 @@ interface TaskItem {
   projectName: string
   isSequence: boolean
   // 使用扁平化的参数，key 中的 . 被替换为 __
-  params: Record<string, string | number | boolean>
+  params: Record<string, string | number | boolean | Array<string | number | boolean>>
 }
 
 const taskList = ref<TaskItem[]>([])
 const formRefs = ref<FormInstance[]>([])
 
 function createEmptyTask(): TaskItem {
-  const initialParams: Record<string, string | number | boolean> = {}
+  const initialParams: Record<
+    string,
+    string | number | boolean | Array<string | number | boolean>
+  > = {}
   // 为每个参数设置默认值，使用安全的 key
   toolParameters.value.forEach((param: ToolParameter) => {
     const safeKey = toSafeKey(param.key)
     if (param.default !== undefined) {
       initialParams[safeKey] = param.default
     } else {
-      switch (param.controlType) {
-        case 'boolean':
-          initialParams[safeKey] = false
-          break
-        case 'number':
-          initialParams[safeKey] = 0
-          break
-        default:
-          initialParams[safeKey] = ''
+      const { base, isArray } = getParamType(param)
+      if (isArray) {
+        initialParams[safeKey] = []
+      } else {
+        switch (base) {
+          case 'Boolean':
+            initialParams[safeKey] = false
+            break
+          case 'Int':
+          case 'Float':
+            initialParams[safeKey] = 0
+            break
+          default:
+            initialParams[safeKey] = ''
+        }
       }
     }
   })
@@ -84,11 +105,16 @@ const rules = computed<FormRules>(() => {
   toolParameters.value.forEach((param: ToolParameter) => {
     if (param.required) {
       const safeKey = toSafeKey(param.key)
+      const { isArray, base } = getParamType(param)
+      let trigger = 'blur'
+      if (isArray || base === 'Boolean') {
+        trigger = 'change'
+      }
       formRules[`params.${safeKey}`] = [
         {
           required: true,
           message: `请输入${param.name}`,
-          trigger: param.controlType === 'boolean' ? 'change' : 'blur',
+          trigger,
         },
       ]
     }
@@ -123,9 +149,17 @@ async function handleSubmit() {
 
   // 构建批量投递数据 - 把安全的 key 转换回原始 key
   const tasks = taskList.value.map((task) => {
-    const originalParams: Record<string, string | number | boolean> = {}
+    const originalParams: Record<
+      string,
+      string | number | boolean | Array<string | number | boolean>
+    > = {}
     Object.entries(task.params).forEach(([safeKey, value]) => {
-      originalParams[fromSafeKey(safeKey)] = value
+      // 数组类型转换为 JSON 字符串或保持原样
+      if (Array.isArray(value)) {
+        originalParams[fromSafeKey(safeKey)] = JSON.stringify(value)
+      } else {
+        originalParams[fromSafeKey(safeKey)] = value
+      }
     })
     return {
       taskName: task.taskName,
@@ -160,13 +194,12 @@ function removeTask(index: number) {
 }
 
 function getPlaceholder(param: ToolParameter): string {
-  switch (param.controlType) {
-    case 'file':
+  const { base } = getParamType(param)
+  switch (base) {
+    case 'File':
       return `请输入${param.name}文件路径`
-    case 'select':
-      return `请选择${param.name}`
-    case 'number':
-      return `请输入${param.name}`
+    case 'Directory':
+      return `请输入${param.name}目录路径`
     default:
       return `请输入${param.name}`
   }
@@ -192,10 +225,15 @@ function downloadTemplate() {
       if (param.default !== undefined) {
         return String(param.default)
       }
-      switch (param.controlType) {
-        case 'boolean':
+      const { base, isArray } = getParamType(param)
+      if (isArray) {
+        return '[]'
+      }
+      switch (base) {
+        case 'Boolean':
           return 'false'
-        case 'number':
+        case 'Int':
+        case 'Float':
           return '0'
         default:
           return ''
@@ -279,17 +317,33 @@ function handleFileSelect(event: Event) {
           const originalKey = fromSafeKey(safeKey)
           const param = toolParameters.value.find((p) => p.key === originalKey)
           if (param && row[index] !== undefined && row[index] !== '') {
-            const value = String(row[index])
-            switch (param.controlType) {
-              case 'number':
-                task.params[safeKey] = Number(value) || 0
-                break
-              case 'boolean':
-                task.params[safeKey] =
-                  value.toLowerCase() === 'true' || value === '1' || value === '是'
-                break
-              default:
-                task.params[safeKey] = value
+            const { base, isArray } = getParamType(param)
+            if (isArray) {
+              // 数组类型尝试解析 JSON 或逗号分隔的值
+              try {
+                const value = String(row[index])
+                if (value.startsWith('[') && value.endsWith(']')) {
+                  task.params[safeKey] = JSON.parse(value)
+                } else {
+                  task.params[safeKey] = value.split(',').map((v) => v.trim())
+                }
+              } catch {
+                task.params[safeKey] = [String(row[index])]
+              }
+            } else {
+              const value = String(row[index])
+              switch (base) {
+                case 'Int':
+                case 'Float':
+                  task.params[safeKey] = Number(value) || 0
+                  break
+                case 'Boolean':
+                  task.params[safeKey] =
+                    value.toLowerCase() === 'true' || value === '1' || value === '是'
+                  break
+                default:
+                  task.params[safeKey] = value
+              }
             }
           }
         })
@@ -417,50 +471,65 @@ function handleFileSelect(event: Event) {
                 <span v-if="param.desc" class="label-desc">{{ param.desc }}</span>
               </template>
 
-              <!-- file: 文件路径输入 -->
-              <el-input
-                v-if="param.controlType === 'file'"
-                v-model="task.params[param.safeKey] as string"
-                :placeholder="getPlaceholder(param)"
-                clearable
-              />
-
-              <!-- string: 文本输入 -->
-              <el-input
-                v-else-if="param.controlType === 'string'"
-                v-model="task.params[param.safeKey] as string"
-                :placeholder="getPlaceholder(param)"
-                clearable
-              />
-
-              <!-- select: 下拉选择 -->
-              <el-select
-                v-else-if="param.controlType === 'select'"
-                v-model="task.params[param.safeKey] as string"
-                :placeholder="getPlaceholder(param)"
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="option in param.options"
-                  :key="option"
-                  :label="option"
-                  :value="option"
+              <!-- 解析类型 -->
+              <template v-if="getParamType(param).isArray">
+                <!-- Array 类型 -->
+                <ArrayInput
+                  v-model="task.params[param.safeKey] as Array<string | number | boolean>"
+                  :item-type="param.type || 'String'"
+                  :placeholder="getPlaceholder(param)"
                 />
-              </el-select>
+              </template>
+              <!-- Boolean -->
+              <el-switch
+                v-else-if="getParamType(param).base === 'Boolean'"
+                v-model="task.params[param.safeKey] as boolean"
+              />
 
-              <!-- number: 数字输入 -->
+              <!-- Int -->
               <el-input-number
-                v-else-if="param.controlType === 'number'"
+                v-else-if="getParamType(param).base === 'Int'"
                 v-model="task.params[param.safeKey] as number"
                 :placeholder="getPlaceholder(param)"
-                style="width: 100%"
+                style="width: 200px"
                 controls-position="right"
+                :precision="0"
+                :step="1"
               />
 
-              <!-- boolean: 开关 -->
-              <el-switch
-                v-else-if="param.controlType === 'boolean'"
-                v-model="task.params[param.safeKey] as boolean"
+              <!-- Float -->
+              <el-input-number
+                v-else-if="getParamType(param).base === 'Float'"
+                v-model="task.params[param.safeKey] as number"
+                :placeholder="getPlaceholder(param)"
+                style="width: 200px"
+                controls-position="right"
+                :precision="2"
+                :step="0.01"
+              />
+
+              <!-- File -->
+              <PathSelector
+                v-else-if="getParamType(param).base === 'File'"
+                v-model="task.params[param.safeKey] as string"
+                type="file"
+                :placeholder="getPlaceholder(param)"
+              />
+
+              <!-- Directory -->
+              <PathSelector
+                v-else-if="getParamType(param).base === 'Directory'"
+                v-model="task.params[param.safeKey] as string"
+                type="directory"
+                :placeholder="getPlaceholder(param)"
+              />
+
+              <!-- String -->
+              <el-input
+                v-else
+                v-model="task.params[param.safeKey] as string"
+                :placeholder="getPlaceholder(param)"
+                clearable
               />
             </el-form-item>
           </el-form>
@@ -608,6 +677,16 @@ function handleFileSelect(event: Event) {
   color: #64748b;
   font-weight: normal;
   margin-top: 4px;
+}
+
+.file-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.file-path-input {
+  flex: 1;
 }
 
 .form-actions {

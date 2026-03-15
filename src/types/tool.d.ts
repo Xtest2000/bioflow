@@ -61,16 +61,33 @@ export interface DeleteToolResponse {
   toolID: string
 }
 
+// 后端返回的参数类型
+export type ParameterType =
+  | 'Boolean'
+  | 'Int'
+  | 'Float'
+  | 'String'
+  | 'File'
+  | 'Directory'
+  | 'Array[Boolean]'
+  | 'Array[Int]'
+  | 'Array[Float]'
+  | 'Array[String]'
+  | 'Array[File]'
+  | 'Array[Directory]'
+
 export interface ToolParameter {
-  controlType: 'file' | 'string' | 'select' | 'number' | 'boolean'
+  // 保留 controlType 兼容，但优先使用 type 字段
+  controlType?: 'file' | 'string' | 'select' | 'number' | 'boolean'
   key: string
   name: string
   name_en?: string
   desc: string
   desc_en?: string
-  type?: string
+  // 后端返回的真实类型
+  type?: ParameterType | string
   required: boolean
-  default?: string | number | boolean
+  default?: string | number | boolean | Array<string | number | boolean>
   visible?: boolean
   enabled_for_sequencing?: boolean
   options?: string[]
