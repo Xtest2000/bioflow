@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useToolStore } from '@/stores/tool'
 import { storeToRefs } from 'pinia'
 import { Search, Refresh, Plus, Delete } from '@element-plus/icons-vue'
+import PathSelector from '@/components/common/PathSelector.vue'
 
 const router = useRouter()
 const toolStore = useToolStore()
@@ -180,12 +181,12 @@ function openDeleteDialog(toolId: number) {
     <el-dialog
       v-model="addDialogVisible"
       title="添加工具"
-      width="500px"
+      width="600px"
       :close-on-click-modal="false"
     >
-      <el-form :model="addPackagePath" label-width="100px">
+      <el-form label-width="100px">
         <el-form-item label="工具包路径">
-          <el-input v-model="addPackagePath" placeholder="/path/to/tool/package" />
+          <PathSelector v-model="addPackagePath" type="directory" placeholder="请选择工具包路径" />
         </el-form-item>
       </el-form>
       <template #footer>
