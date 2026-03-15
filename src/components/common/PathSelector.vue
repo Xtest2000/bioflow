@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Folder, Document, Search } from '@element-plus/icons-vue'
+import { Folder, Document, Search, Loading } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { fetchPathStructure } from '@/api/fileSystem'
+import type { FileSystemEntry } from '@/types/fileSystem'
 
 interface Props {
   modelValue: string
@@ -21,68 +24,20 @@ const currentPath = ref('/')
 const selectedPath = ref('')
 const searchQuery = ref('')
 const searchMode = ref(false)
+const loading = ref(false)
 
-// 模拟文件系统结构
-const mockFileSystem: Record<string, { name: string; type: 'file' | 'directory' }[]> = {
-  '/': [
-    { name: 'data', type: 'directory' },
-    { name: 'home', type: 'directory' },
-    { name: 'tmp', type: 'directory' },
-    { name: 'config.yaml', type: 'file' },
-  ],
-  '/data': [
-    { name: 'cromwell_workdir', type: 'directory' },
-    { name: 'projects', type: 'directory' },
-    { name: 'samples', type: 'directory' },
-    { name: 'reference', type: 'directory' },
-  ],
-  '/data/cromwell_workdir': [
-    { name: 'CNV_V10.0.0.0', type: 'directory' },
-    { name: 'SNP', type: 'directory' },
-    { name: 'RNASeq', type: 'directory' },
-  ],
-  '/data/projects': [
-    { name: 'project_001', type: 'directory' },
-    { name: 'project_002', type: 'directory' },
-  ],
-  '/data/samples': [
-    { name: 'sample_001.fastq', type: 'file' },
-    { name: 'sample_002.fastq', type: 'file' },
-    { name: 'sample_003.bam', type: 'file' },
-  ],
-  '/data/reference': [
-    { name: 'GRCh38.fa', type: 'file' },
-    { name: 'hg19.fa', type: 'file' },
-    { name: 'dbsnp.vcf', type: 'file' },
-  ],
-  '/home': [
-    { name: 'user', type: 'directory' },
-    { name: 'scripts', type: 'directory' },
-  ],
-  '/home/user': [
-    { name: 'analysis.py', type: 'file' },
-    { name: 'config.json', type: 'file' },
-  ],
-  '/home/scripts': [
-    { name: 'run_pipeline.sh', type: 'file' },
-    { name: 'qc.sh', type: 'file' },
-  ],
-  '/tmp': [
-    { name: 'output', type: 'directory' },
-    { name: 'logs', type: 'directory' },
-  ],
-}
+// 当前目录的文件系统条目
+const currentEntries = ref<FileSystemEntry[]>([])
 
-// 所有已知路径（用于搜索）
-const allPaths = computed(() => {
-  const paths: { path: string; name: string; type: 'file' | 'directory' }[] = []
-  Object.entries(mockFileSystem).forEach(([dirPath, items]) => {
-    items.forEach((item) => {
-      const fullPath = dirPath === '/' ? `/${item.name}` : `${dirPath}/${item.name}`
-      paths.push({ path: fullPath, name: item.name, type: item.type })
-    })
-  })
-  return paths
+// 已访问路径缓存（用于搜索）
+const visitedPaths = ref<Record<string, FileSystemEntry[]>>({})
+
+// 过滤显示的项目（File 类型显示所有，Directory 类型只显示目录）
+const filteredItems = computed(() => {
+  if (props.type === 'directory') {
+    return currentEntries.value.filter((item) => item.type === 'directory')
+  }
+  return currentEntries.value
 })
 
 // 搜索结果
@@ -90,50 +45,72 @@ const searchResults = computed(() => {
   if (!searchQuery.value.trim()) return []
 
   const query = searchQuery.value.toLowerCase()
-  return allPaths.value.filter((item) => {
-    // Directory 类型只显示目录
-    if (props.type === 'directory' && item.type !== 'directory') return false
-    // 匹配路径或名称
-    return item.path.toLowerCase().includes(query) || item.name.toLowerCase().includes(query)
+  const results: FileSystemEntry[] = []
+
+  Object.values(visitedPaths.value).forEach((entries) => {
+    entries.forEach((entry) => {
+      if (props.type === 'directory' && entry.type !== 'directory') return
+      if (entry.name.toLowerCase().includes(query) || entry.path.toLowerCase().includes(query)) {
+        results.push(entry)
+      }
+    })
   })
+
+  return results
 })
 
-const currentItems = computed(() => {
-  return mockFileSystem[currentPath.value] || []
-})
-
-// 过滤显示的项目（File 类型显示所有，Directory 类型只显示目录）
-const filteredItems = computed(() => {
-  if (props.type === 'directory') {
-    return currentItems.value.filter((item) => item.type === 'directory')
+// 加载目录内容
+async function loadDirectory(path: string) {
+  loading.value = true
+  try {
+    const response = await fetchPathStructure({ path })
+    currentEntries.value = response.entries
+    currentPath.value = path
+    // 缓存已访问路径
+    visitedPaths.value[path] = response.entries
+  } catch (error) {
+    console.error('加载目录失败:', error)
+    ElMessage.error('加载目录失败')
+    currentEntries.value = []
+  } finally {
+    loading.value = false
   }
-  return currentItems.value
-})
+}
+
+// 格式化文件大小
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
+}
 
 function openDialog() {
   dialogVisible.value = true
   selectedPath.value = props.modelValue || ''
   searchQuery.value = ''
   searchMode.value = false
+  visitedPaths.value = {}
+  loadDirectory('/')
 }
 
-function navigateTo(item: { name: string; type: 'file' | 'directory' }) {
+function navigateTo(item: FileSystemEntry) {
   if (item.type === 'directory') {
-    currentPath.value =
-      currentPath.value === '/' ? `/${item.name}` : `${currentPath.value}/${item.name}`
+    loadDirectory(item.path)
   } else if (props.type === 'file') {
-    // 文件类型：点击文件直接选中
-    selectedPath.value =
-      currentPath.value === '/' ? `/${item.name}` : `${currentPath.value}/${item.name}`
+    selectedPath.value = item.path
   }
 }
 
 // 从搜索结果中选择
-function selectSearchResult(item: { path: string; name: string; type: 'file' | 'directory' }) {
+function selectSearchResult(item: FileSystemEntry) {
   selectedPath.value = item.path
-  // 如果是目录，可以跳转到该目录
   if (item.type === 'directory') {
     currentPath.value = item.path
+    // 如果缓存中没有该目录，加载它
+    if (!visitedPaths.value[item.path]) {
+      loadDirectory(item.path)
+    }
   }
   searchQuery.value = ''
   searchMode.value = false
@@ -143,11 +120,11 @@ function goUp() {
   if (currentPath.value === '/') return
   const parts = currentPath.value.split('/')
   parts.pop()
-  currentPath.value = parts.length === 1 ? '/' : parts.join('/')
+  const parentPath = parts.length === 1 ? '/' : parts.join('/')
+  loadDirectory(parentPath)
 }
 
 function selectCurrent() {
-  // Directory 类型：选择当前目录
   selectedPath.value = currentPath.value
 }
 
@@ -167,32 +144,11 @@ function goToPath() {
   const path = searchQuery.value.trim()
   if (!path) return
 
-  // 检查是否是有效路径
-  if (mockFileSystem[path] || path === '/') {
-    currentPath.value = path
+  // 尝试加载该路径
+  if (path.startsWith('/')) {
+    loadDirectory(path)
     searchQuery.value = ''
     searchMode.value = false
-  } else if (path.startsWith('/')) {
-    // 尝试提取父目录
-    const parts = path.split('/')
-    const possibleFile = parts.pop()
-    const parentPath = parts.join('/') || '/'
-
-    if (mockFileSystem[parentPath]) {
-      // 检查是否是文件
-      const items = mockFileSystem[parentPath]
-      const fileItem = items.find((i) => i.name === possibleFile)
-      if (fileItem && (props.type === 'file' || fileItem.type === 'directory')) {
-        selectedPath.value = path
-        currentPath.value = parentPath
-        searchQuery.value = ''
-        searchMode.value = false
-        return
-      }
-    }
-
-    // 路径不存在，作为搜索词使用
-    searchMode.value = true
   } else {
     // 相对路径或搜索词
     searchMode.value = true
@@ -200,18 +156,12 @@ function goToPath() {
 }
 
 // 重置状态
-watch(
-  dialogVisible,
-  (val) => {
-    if (val) {
-      currentPath.value = '/'
-      selectedPath.value = props.modelValue || ''
-      searchQuery.value = ''
-      searchMode.value = false
-    }
-  },
-  { immediate: true }
-)
+watch(dialogVisible, (val) => {
+  if (!val) {
+    // 关闭对话框时清空缓存
+    visitedPaths.value = {}
+  }
+})
 
 // 监听搜索输入
 watch(searchQuery, (val) => {
@@ -257,8 +207,14 @@ watch(searchQuery, (val) => {
           </el-input>
         </div>
 
+        <!-- Loading 状态 -->
+        <div v-if="loading" class="loading-container">
+          <el-icon class="is-loading" :size="32"><Loading /></el-icon>
+          <span class="loading-text">加载中...</span>
+        </div>
+
         <!-- 搜索结果 -->
-        <div v-if="searchMode && searchResults.length > 0" class="search-results">
+        <div v-else-if="searchMode && searchResults.length > 0" class="search-results">
           <div class="search-header">搜索结果 ({{ searchResults.length }})</div>
           <div class="file-list">
             <div
@@ -277,6 +233,12 @@ watch(searchQuery, (val) => {
               <div class="item-info">
                 <span class="item-name">{{ item.name }}</span>
                 <span class="item-path">{{ item.path }}</span>
+              </div>
+              <div class="item-meta">
+                <span v-if="item.type === 'file'" class="item-size">{{
+                  formatSize(item.size)
+                }}</span>
+                <span class="item-time">{{ item.modified_human }}</span>
               </div>
             </div>
           </div>
@@ -301,9 +263,9 @@ watch(searchQuery, (val) => {
           <div class="file-list">
             <div
               v-for="item in filteredItems"
-              :key="item.name"
+              :key="item.path"
               class="file-item"
-              :class="{ selected: selectedPath.includes(item.name) }"
+              :class="{ selected: selectedPath === item.path }"
               @click="navigateTo(item)"
               @dblclick="item.type === 'directory' ? null : confirm()"
             >
@@ -313,7 +275,15 @@ watch(searchQuery, (val) => {
               <el-icon v-else :size="20">
                 <Document />
               </el-icon>
-              <span class="item-name">{{ item.name }}</span>
+              <div class="item-info">
+                <span class="item-name">{{ item.name }}</span>
+                <div class="item-meta">
+                  <span v-if="item.type === 'file'" class="item-size">{{
+                    formatSize(item.size)
+                  }}</span>
+                  <span class="item-time">{{ item.modified_human }}</span>
+                </div>
+              </div>
             </div>
 
             <div v-if="filteredItems.length === 0" class="empty">空目录</div>
@@ -349,6 +319,20 @@ watch(searchQuery, (val) => {
 
 .search-box {
   margin-bottom: 12px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  color: #909399;
+}
+
+.loading-text {
+  font-size: 14px;
 }
 
 .current-path {
@@ -416,11 +400,27 @@ watch(searchQuery, (val) => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
 }
 
 .item-name {
   font-size: 14px;
   color: #303133;
+}
+
+.item-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.item-size {
+  color: #909399;
+}
+
+.item-time {
+  color: #c0c4cc;
 }
 
 .item-path {
