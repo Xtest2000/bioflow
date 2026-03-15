@@ -24,7 +24,7 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://172.29.167.191:4080',
+        target: 'http://host.docker.internal:8101',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

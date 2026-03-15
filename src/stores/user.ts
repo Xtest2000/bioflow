@@ -25,9 +25,14 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function logout() {
-    await apiLogout()
-    csrfToken.value = null
-    user.value = null
+    try {
+      await apiLogout()
+    } finally {
+      // 确保状态被清理，无论 API 调用成功与否
+      csrfToken.value = null
+      user.value = null
+      localStorage.removeItem('csrf_token')
+    }
   }
 
   async function fetchUser() {

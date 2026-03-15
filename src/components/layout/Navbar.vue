@@ -20,9 +20,9 @@ function handleMenuSelect(key: string) {
   router.push(key)
 }
 
-function handleLogout() {
-  userStore.logout()
-  router.push('/login')
+async function handleLogout() {
+  await userStore.logout()
+  router.replace('/login')
 }
 
 function goToProfile() {

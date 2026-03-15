@@ -24,10 +24,14 @@ export async function login(data: LoginForm): Promise<LoginResponse> {
 }
 
 export async function logout(): Promise<void> {
-  if (!isMockMode) {
-    await api.post('/analysis/logout/')
+  try {
+    if (!isMockMode) {
+      await api.post('/analysis/logout/')
+    }
+  } finally {
+    // 无论 API 调用成功与否，都清除本地存储
+    localStorage.removeItem('csrf_token')
   }
-  localStorage.removeItem('csrf_token')
 }
 
 export async function register(data: LoginForm): Promise<LoginResponse> {
