@@ -190,7 +190,7 @@ export const useToolStore = defineStore('tool', () => {
     tasks: Array<{
       taskName: string
       projectName: string
-      is_sequence: string
+      is_sequence: boolean
       params: Record<string, string | number | boolean>
     }>
   ) {

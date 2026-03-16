@@ -164,7 +164,7 @@ async function handleSubmit() {
     return {
       taskName: task.taskName,
       projectName: task.projectName,
-      is_sequence: task.isSequence ? 'true' : 'false',
+      is_sequence: task.isSequence,
       params: originalParams,
     }
   })

@@ -554,7 +554,7 @@ export interface BatchSubmitTaskParams {
   list: Array<{
     taskName: string
     projectName: string
-    is_sequence: string
+    is_sequence: boolean
     params: Record<string, string | number | boolean>
   }>
 }

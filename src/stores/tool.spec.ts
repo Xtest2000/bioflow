@@ -132,7 +132,7 @@ describe('useToolStore', () => {
       {
         taskName: '任务 1',
         projectName: '项目 1',
-        is_sequence: 'false',
+        is_sequence: false,
         params: {
           'test.file': '/path/to/file1.txt',
           'test.name': 'sample1',
@@ -141,7 +141,7 @@ describe('useToolStore', () => {
       {
         taskName: '任务 2',
         projectName: '项目 2',
-        is_sequence: 'true',
+        is_sequence: true,
         params: {
           'test.file': '/path/to/file2.txt',
           'test.name': 'sample2',
@@ -160,7 +160,7 @@ describe('useToolStore', () => {
     const mockTasks = Array.from({ length: 5 }, (_, i) => ({
       taskName: `任务${i + 1}`,
       projectName: `项目${i + 1}`,
-      is_sequence: i % 2 === 0 ? 'true' : 'false',
+      is_sequence: i % 2 === 0,
       params: {
         'test.file': `/path/to/file${i}.txt`,
         'test.name': `sample${i}`,

@@ -186,7 +186,7 @@ function openDeleteDialog(toolId: number) {
     >
       <el-form label-width="100px">
         <el-form-item label="工具包路径">
-          <PathSelector v-model="addPackagePath" type="directory" placeholder="请选择工具包路径" />
+          <PathSelector v-model="addPackagePath" type="file" placeholder="请选择工具包路径" />
         </el-form-item>
       </el-form>
       <template #footer>

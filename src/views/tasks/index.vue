@@ -78,11 +78,19 @@ function handleRefresh() {
 }
 
 function canCancel(status: string): boolean {
-  return ['RUNNING', 'SUBMITTED', 'QUEUED'].includes(status)
+  return ['RUNNING', 'SUBMITTED', 'QUEUED'].includes(status.toUpperCase())
 }
 
 function canDelete(status: string): boolean {
-  return ['COMPLETE', 'FAILED', 'TERMINATED'].includes(status)
+  return [
+    'COMPLETE',
+    'FAILED',
+    'TERMINATED',
+    'EXECUTOR_ERROR',
+    'SYSTEM_ERROR',
+    'CANCELED',
+    'SUSPENDED',
+  ].includes(status.toUpperCase())
 }
 
 async function handleCancel(row: TaskListItem) {
@@ -241,9 +249,9 @@ onMounted(() => {
             {{ formatTime(row.taskSendTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="taskRunTime" label="运行时间" min-width="160">
+        <el-table-column prop="taskRunTime" label="运行时间" min-width="100" align="center">
           <template #default="{ row }">
-            {{ row.taskRunTime ? formatTime(row.taskRunTime) : '-' }}
+            {{ row.taskRunTime || '-' }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="140" fixed="right" align="center">
