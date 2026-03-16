@@ -21,6 +21,8 @@ const searchForm = reactive({
 })
 
 function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'danger' {
+  // 统一转换为大写进行比较，兼容 API 返回的不同大小写格式
+  const statusUpper = status.toUpperCase()
   const map: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
     RUNNING: 'warning',
     COMPLETE: 'success',
@@ -29,19 +31,7 @@ function getStatusType(status: string): '' | 'success' | 'warning' | 'info' | 'd
     TERMINATED: 'info',
     QUEUED: 'info',
   }
-  return map[status] || 'info'
-}
-
-function getStatusText(status: string): string {
-  const map: Record<string, string> = {
-    RUNNING: '运行中',
-    COMPLETE: '已完成',
-    FAILED: '失败',
-    SUBMITTED: '已提交',
-    TERMINATED: '已终止',
-    QUEUED: '排队中',
-  }
-  return map[status] || '未知'
+  return map[statusUpper] || 'info'
 }
 
 function formatTime(dateString: string): string {
@@ -224,29 +214,39 @@ onMounted(() => {
         </div>
       </div>
 
-      <el-table :data="taskList" style="width: 100%" v-loading="isLoading">
-        <el-table-column prop="taskName" label="任务名称" min-width="200" />
-        <el-table-column prop="taskStatus" label="状态" width="100">
+      <el-table :data="taskList" v-loading="isLoading" fit>
+        <el-table-column prop="taskName" label="任务名称" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="taskStatus" label="状态" width="175" align="center">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.taskStatus)" size="small">
-              {{ getStatusText(row.taskStatus) }}
-            </el-tag>
+            <span class="status-badge" :class="`status-${getStatusType(row.taskStatus)}`">
+              {{ row.taskStatus }}
+            </span>
           </template>
         </el-table-column>
-        <el-table-column prop="taskToolName" label="工具名称" width="140" />
-        <el-table-column prop="taskToolVersion" label="工具版本" width="120" />
-        <el-table-column prop="taskProjectName" label="项目名称" width="140" />
-        <el-table-column prop="taskSendTime" label="提交时间" width="180">
+        <el-table-column
+          prop="taskToolName"
+          label="工具名称"
+          min-width="120"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="taskToolVersion" label="工具版本" min-width="100" />
+        <el-table-column
+          prop="taskProjectName"
+          label="项目名称"
+          min-width="120"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="taskSendTime" label="提交时间" min-width="160">
           <template #default="{ row }">
             {{ formatTime(row.taskSendTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="taskRunTime" label="运行时间" width="180">
+        <el-table-column prop="taskRunTime" label="运行时间" min-width="160">
           <template #default="{ row }">
             {{ row.taskRunTime ? formatTime(row.taskRunTime) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="140" fixed="right" align="center">
           <template #default="{ row }">
             <el-button type="primary" link size="small" @click="handleViewDetail(row)">
               详情
@@ -363,5 +363,45 @@ onMounted(() => {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid #e2e8f0;
+}
+
+/* 状态徽章样式 */
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.status-warning {
+  background: #fef3cd;
+  color: #856404;
+}
+
+.status-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-danger {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-info {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.el-table :deep(.el-table__body-wrapper) {
+  overflow-x: auto;
+}
+
+.el-table :deep(.el-table th.el-table__cell) {
+  background: #fafafa;
+  font-weight: 600;
 }
 </style>

@@ -1,4 +1,5 @@
-export type TaskStatus = 'RUNNING' | 'COMPLETE' | 'SUBMITTED' | 'FAILED' | 'TERMINATED' | 'QUEUED'
+// 支持不同大小写的任务状态（API 可能返回 RUNNING, Running, running 等格式）
+export type TaskStatus = string
 
 export interface TaskStatistics {
   activeTask: number
