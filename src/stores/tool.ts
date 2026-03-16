@@ -173,13 +173,9 @@ export const useToolStore = defineStore('tool', () => {
     submitError.value = null
     try {
       const response = await fetchSubmitTask({ toolID, version, parameters })
-      if (response.code === 200) {
-        submitSuccess.value = true
-        submitTaskId.value = response.taskID || null
-        ElMessage.success('任务提交成功')
-      } else {
-        throw new Error(response.message || '任务提交失败')
-      }
+      submitSuccess.value = true
+      submitTaskId.value = response.taskID || null
+      ElMessage.success('任务提交成功')
     } catch (e) {
       submitError.value = e instanceof Error ? e.message : '任务提交失败'
       ElMessage.error(submitError.value)
@@ -203,24 +199,19 @@ export const useToolStore = defineStore('tool', () => {
     submitError.value = null
     try {
       const response = await fetchBatchSubmitTask({ toolID, version, list: tasks })
-      if (response.code === 200) {
-        submitSuccess.value = true
-        // 在 Mock 模式下，将新任务添加到任务列表
-        if (response.data && import.meta.env.VITE_MOCK_MODE === 'true') {
-          const now = new Date().toISOString()
-          const newTasks = response.data.map((task) => ({
-            id: task.taskID,
-            name: task.taskName,
-            status: task.taskStatus.toLowerCase() as 'running' | 'completed' | 'failed' | 'pending',
-            createdAt: now,
-            updatedAt: now,
-          }))
-          addMockTasks(newTasks)
-        }
-        ElMessage.success(`成功提交 ${tasks.length} 个任务`)
-      } else {
-        throw new Error(response.message || '任务提交失败')
+      submitSuccess.value = true
+      if (response.data && import.meta.env.VITE_MOCK_MODE === 'true') {
+        const now = new Date().toISOString()
+        const newTasks = response.data.map((task) => ({
+          id: task.taskID,
+          name: task.taskName,
+          status: task.taskStatus.toLowerCase() as 'running' | 'completed' | 'failed' | 'pending',
+          createdAt: now,
+          updatedAt: now,
+        }))
+        addMockTasks(newTasks)
       }
+      ElMessage.success(`成功提交 ${tasks.length} 个任务`)
     } catch (e) {
       submitError.value = e instanceof Error ? e.message : '任务提交失败'
       ElMessage.error(submitError.value)

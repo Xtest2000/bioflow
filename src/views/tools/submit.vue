@@ -172,7 +172,6 @@ async function handleSubmit() {
   await toolStore.submitBatchTask(toolId.value, version.value, tasks)
 
   if (toolStore.submitSuccess) {
-    ElMessage.success(`成功提交 ${tasks.length} 个任务`)
     router.push('/tasks')
   }
 }
