@@ -32,7 +32,7 @@ function fromSafeKey(safeKey: string): string {
 function getParamType(param: ToolParameter): { base: string; isArray: boolean } {
   const typeStr = param.type || 'String'
   const match = typeStr.match(/^Array\[(.+)\]$/)
-  if (match) {
+  if (match && match[1]) {
     return { base: match[1], isArray: true }
   }
   return { base: typeStr, isArray: false }
@@ -149,12 +149,9 @@ async function handleSubmit() {
 
   // 构建批量投递数据 - 把安全的 key 转换回原始 key
   const tasks = taskList.value.map((task) => {
-    const originalParams: Record<
-      string,
-      string | number | boolean | Array<string | number | boolean>
-    > = {}
+    const originalParams: Record<string, string | number | boolean> = {}
     Object.entries(task.params).forEach(([safeKey, value]) => {
-      // 数组类型转换为 JSON 字符串或保持原样
+      // 数组类型转换为 JSON 字符串
       if (Array.isArray(value)) {
         originalParams[fromSafeKey(safeKey)] = JSON.stringify(value)
       } else {
@@ -268,7 +265,15 @@ function handleFileSelect(event: Event) {
       const data = e.target?.result
       const workbook = XLSX.read(data, { type: 'binary' })
       const sheetName = workbook.SheetNames[0]
+      if (!sheetName) {
+        ElMessage.warning('模板文件没有工作表')
+        return
+      }
       const worksheet = workbook.Sheets[sheetName]
+      if (!worksheet) {
+        ElMessage.warning('模板文件工作表无效')
+        return
+      }
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
 
       if (jsonData.length < 2) {
@@ -277,7 +282,12 @@ function handleFileSelect(event: Event) {
       }
 
       // 解析表头
-      const headers = jsonData[0].map((h) => String(h))
+      const headerRow = jsonData[0]
+      if (!headerRow) {
+        ElMessage.warning('模板文件格式不正确')
+        return
+      }
+      const headers = headerRow.map((h) => String(h))
       const taskNameIndex = headers.indexOf('任务名称')
       const projectNameIndex = headers.indexOf('项目名称')
       const isSequenceIndex = headers.indexOf('是否序列执行')
@@ -300,6 +310,7 @@ function handleFileSelect(event: Event) {
       const newTasks: TaskItem[] = []
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i]
+        if (!row) continue
         if (!row[taskNameIndex] && !row[projectNameIndex]) continue
 
         const task: TaskItem = createEmptyTask()
@@ -307,7 +318,7 @@ function handleFileSelect(event: Event) {
         task.projectName = String(row[projectNameIndex] || '')
 
         if (isSequenceIndex !== -1) {
-          const seqValue = String(row[isSequenceIndex]).toLowerCase()
+          const seqValue = String(row[isSequenceIndex] ?? '').toLowerCase()
           task.isSequence = seqValue === 'true' || seqValue === '1' || seqValue === '是'
         }
 
@@ -315,22 +326,23 @@ function handleFileSelect(event: Event) {
         Object.entries(paramIndices).forEach(([safeKey, index]) => {
           const originalKey = fromSafeKey(safeKey)
           const param = toolParameters.value.find((p) => p.key === originalKey)
-          if (param && row[index] !== undefined && row[index] !== '') {
+          const cellValue = row[index]
+          if (param && cellValue !== undefined && cellValue !== '') {
             const { base, isArray } = getParamType(param)
             if (isArray) {
               // 数组类型尝试解析 JSON 或逗号分隔的值
               try {
-                const value = String(row[index])
+                const value = String(cellValue)
                 if (value.startsWith('[') && value.endsWith(']')) {
                   task.params[safeKey] = JSON.parse(value)
                 } else {
                   task.params[safeKey] = value.split(',').map((v) => v.trim())
                 }
               } catch {
-                task.params[safeKey] = [String(row[index])]
+                task.params[safeKey] = [String(cellValue)]
               }
             } else {
-              const value = String(row[index])
+              const value = String(cellValue)
               switch (base) {
                 case 'Int':
                 case 'Float':
@@ -430,7 +442,7 @@ function handleFileSelect(event: Event) {
 
           <!-- 任务基本信息 -->
           <el-form
-            :ref="(el) => (formRefs[taskIndex] = el)"
+            :ref="(el: unknown) => (formRefs[taskIndex] = el as FormInstance)"
             :model="task"
             :rules="rules"
             label-position="top"
