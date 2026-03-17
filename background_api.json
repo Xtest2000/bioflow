@@ -351,7 +351,7 @@
           {
             "taskName": "test",
             "projectName": "test",
-            "is_sequence": "true/false",
+            "is_sequence": true,
             "params": {
               "CNV.sample_type": "test",
               "CNV.sample_name": "test",

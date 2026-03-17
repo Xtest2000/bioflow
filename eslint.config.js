@@ -4,7 +4,7 @@ import eslintConfigPrettier from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'Dockerfile.ts'],
+    ignores: ['dist/**', 'node_modules/**', 'Dockerfile.ts', '*.config.d.ts'],
   },
   ...tseslint.configs.recommended,
   ...pluginVue.configs['flat/essential'],

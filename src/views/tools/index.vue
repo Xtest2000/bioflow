@@ -59,7 +59,7 @@ function handleUseTool(tool: { toolID: number }) {
 function initVersions() {
   tools.value.forEach((tool) => {
     if (tool.versions.length > 0 && !selectedVersions.value[tool.toolID]) {
-      selectedVersions.value[tool.toolID] = tool.versions[0]
+      selectedVersions.value[tool.toolID] = tool.versions[0] ?? ''
     }
   })
 }
