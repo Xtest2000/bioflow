@@ -14,6 +14,12 @@ dist-ssr
 .vite
 .cache
 
+# Config compiled outputs
+vite.config.js
+vite.config.d.ts
+vitest.config.js
+vitest.config.d.ts
+
 # Environment
 .env
 .env.local
