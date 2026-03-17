@@ -34,11 +34,11 @@ describe('Tasks.vue', () => {
     expect(wrapper.text()).toContain('刷新')
   })
 
-  it('renders search input', async () => {
+  it('renders filter section', async () => {
     const wrapper = mount(Tasks)
     await wrapper.vm.$nextTick()
-    const input = wrapper.find('input[placeholder*="搜索"]')
-    expect(input.exists()).toBe(true)
+    expect(wrapper.text()).toContain('时间范围')
+    expect(wrapper.text()).toContain('状态')
   })
 
   it('maps status types correctly', () => {
@@ -46,24 +46,18 @@ describe('Tasks.vue', () => {
     const vm = wrapper.vm as unknown as {
       getStatusType: (status: string) => '' | 'success' | 'warning' | 'info' | 'danger'
     }
-    expect(vm.getStatusType('completed')).toBe('success')
-    expect(vm.getStatusType('running')).toBe('warning')
+    expect(vm.getStatusType('COMPLETE')).toBe('success')
+    expect(vm.getStatusType('RUNNING')).toBe('warning')
+    expect(vm.getStatusType('FAILED')).toBe('danger')
   })
 
-  it('maps status text correctly', () => {
-    const wrapper = mount(Tasks)
-    const vm = wrapper.vm as unknown as { getStatusText: (status: string) => string }
-    expect(vm.getStatusText('completed')).toBe('已完成')
-    expect(vm.getStatusText('running')).toBe('运行中')
-  })
-
-  it('calls fetchAll on refresh', async () => {
+  it('calls fetchTaskList on refresh', async () => {
     const store = useTaskStore()
-    const fetchAllSpy = vi.spyOn(store, 'fetchAll').mockResolvedValue()
+    const fetchSpy = vi.spyOn(store, 'fetchTaskList').mockResolvedValue()
     const wrapper = mount(Tasks)
     await wrapper.vm.$nextTick()
     const vm = wrapper.vm as unknown as { handleRefresh: () => void }
     vm.handleRefresh()
-    expect(fetchAllSpy).toHaveBeenCalled()
+    expect(fetchSpy).toHaveBeenCalled()
   })
 })
